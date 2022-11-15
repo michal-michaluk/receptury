@@ -1,25 +1,21 @@
 package devices.configuration.protocols.iot20;
 
-import lombok.Value;
+import devices.configuration.intervals.DeviceInfo;
+import devices.configuration.intervals.Protocols;
 
-@Value
-class BootNotificationRequest {
-    Device device;
-    Reason reason;
+record BootNotificationRequest(
+        Device device,
+        Reason reason) {
 
-    @Value
-    static class Device {
-        String serialNumber;
-        String model;
-        Modem modem;
-        String vendorName;
-        String firmwareVersion;
+    record Device(
+            String serialNumber,
+            String model,
+            Modem modem,
+            String vendorName,
+            String firmwareVersion) {
     }
 
-    @Value
-    static class Modem {
-        String iccid;
-        String imsi;
+    record Modem(String iccid, String imsi) {
     }
 
     enum Reason {
@@ -32,5 +28,14 @@ class BootNotificationRequest {
         Triggered,
         Unknown,
         Watchdog
+    }
+
+    DeviceInfo toDevice(String deviceId) {
+        return new DeviceInfo(
+                deviceId,
+                device.vendorName(),
+                device.model(),
+                Protocols.IoT20
+        );
     }
 }
