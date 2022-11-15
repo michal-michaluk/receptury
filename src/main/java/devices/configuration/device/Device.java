@@ -3,7 +3,6 @@ package devices.configuration.device;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public
 class Device {
     final String deviceId;
 
