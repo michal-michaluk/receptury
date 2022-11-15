@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-record IntervalRules(
+public record IntervalRules(
         List<DeviceIdRule> byIds,
         List<ModelRule> byModel,
         List<ProtocolRule> byProtocol,
