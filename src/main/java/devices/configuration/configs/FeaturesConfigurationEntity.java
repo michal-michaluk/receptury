@@ -1,7 +1,8 @@
 package devices.configuration.configs;
 
-import devices.configuration.intervals.IntervalRules;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import devices.configuration.JsonConfiguration;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
@@ -14,17 +15,29 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "features_configuration")
-@AllArgsConstructor
 @NoArgsConstructor
 public class FeaturesConfigurationEntity {
     @Id
     private String name;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private IntervalRules configuration;
+    private JsonNode configuration;
 
-    public FeaturesConfigurationEntity withConfiguration(IntervalRules configuration) {
-        this.configuration = configuration;
+    public FeaturesConfigurationEntity(String name) {
+        this.name = name;
+        this.configuration = null;
+    }
+
+    public FeaturesConfigurationEntity withConfiguration(Object configuration) {
+        this.configuration = JsonConfiguration.OBJECT_MAPPER.valueToTree(configuration);
         return this;
+    }
+
+    public <T> T configAs(Class<T> type) {
+        try {
+            return JsonConfiguration.OBJECT_MAPPER.treeToValue(configuration, type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

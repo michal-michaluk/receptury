@@ -23,7 +23,8 @@ class IntervalRulesRepositoryTest {
     @Test
     void shouldSaveAndLoadIntervalRules() {
         //given
-        FeaturesConfigurationEntity entity = new FeaturesConfigurationEntity("IntervalRules", IntervalRulesFixture.currentRules());
+        FeaturesConfigurationEntity entity = new FeaturesConfigurationEntity("IntervalRules")
+                .withConfiguration(IntervalRulesFixture.currentRules());
 
         // when
         transactional(() -> repository.save(entity));

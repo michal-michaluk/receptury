@@ -1,5 +1,6 @@
 package devices.configuration.intervals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import devices.configuration.configs.FeaturesConfigurationEntity;
 import devices.configuration.configs.FeaturesConfigurationRepository;
 import lombok.AllArgsConstructor;
@@ -15,13 +16,13 @@ class IntervalRulesDocumentRepository implements IntervalRulesRepository {
     @Override
     public IntervalRules get() {
         return repository.findByName(CONFIG_NAME)
-                .map(FeaturesConfigurationEntity::getConfiguration)
+                .map(e -> e.configAs(IntervalRules.class))
                 .orElse(IntervalRules.defaultRules());
     }
 
-    public IntervalRules save(IntervalRules configuration) {
+    public JsonNode save(IntervalRules configuration) {
         return repository.findByName(CONFIG_NAME)
-                .orElseGet(() -> repository.save(new FeaturesConfigurationEntity(CONFIG_NAME, configuration)))
+                .orElseGet(() -> repository.save(new FeaturesConfigurationEntity(CONFIG_NAME)))
                 .withConfiguration(configuration)
                 .getConfiguration();
     }
