@@ -4,13 +4,13 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public record IntervalRules(
+record IntervalRules(
         List<DeviceIdRule> byIds,
         List<ModelRule> byModel,
         List<ProtocolRule> byProtocol,
         int defSeconds) {
 
-    public static IntervalRules defaultRules() {
+    static IntervalRules defaultRules() {
         return new IntervalRules(List.of(), List.of(), List.of(), 1800);
     }
 
