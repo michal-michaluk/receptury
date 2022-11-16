@@ -10,7 +10,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DeviceService {
 
-    private final DeviceRepository repository;
+    private final devices.configuration.device.DeviceEventSourcingRepository repository;
 
     @Transactional
     public Optional<DeviceSnapshot> update(String deviceId, UpdateDevice update) {
