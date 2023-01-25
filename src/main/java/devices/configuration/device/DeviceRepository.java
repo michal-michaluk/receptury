@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
-public interface DeviceRepository {
+interface DeviceRepository {
     Page<Device> findAll(Pageable pageable);
 
     Optional<Device> findByDeviceId(String deviceId);

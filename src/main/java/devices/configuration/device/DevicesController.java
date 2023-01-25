@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -17,23 +18,28 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 class DevicesController {
 
-    private final DeviceRepository repository;
+    private final DeviceReads reads;
     private final DeviceService service;
 
     @Transactional(readOnly = true)
     @GetMapping(path = "/devices", params = {"page", "size"},
-            produces = APPLICATION_JSON_VALUE)
-    Page<DeviceSnapshot> get(Pageable pageable) {
-        return repository.findAll(pageable)
-                .map(Device::toSnapshot);
+            produces = "application/vnd.device.summary+json")
+    Page<DeviceSummary> getSummary(String provider, Pageable pageable) {
+        return reads.findAllSummary(provider, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    @GetMapping(path = "/devices", params = {"page", "size"},
+            produces = "application/vnd.device.pin+json")
+    List<DevicePin> getPins(String provider) {
+        return reads.findAllPins(provider);
     }
 
     @Transactional(readOnly = true)
     @GetMapping(path = "/devices/{deviceId}",
             produces = APPLICATION_JSON_VALUE)
     Optional<DeviceSnapshot> get(@PathVariable String deviceId) {
-        return repository.findByDeviceId(deviceId)
-                .map(Device::toSnapshot);
+        return reads.findById(deviceId);
     }
 
     @PatchMapping(path = "/devices/{deviceId}",
