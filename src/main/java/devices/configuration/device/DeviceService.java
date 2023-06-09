@@ -13,6 +13,14 @@ public class DeviceService {
     private final devices.configuration.device.DeviceEventSourcingRepository repository;
 
     @Transactional
+    public DeviceSnapshot createNewDevice(String deviceId, UpdateDevice update) {
+        Device device = Device.create(deviceId);
+        update.apply(device);
+        repository.save(device);
+        return device.toSnapshot();
+    }
+
+    @Transactional
     public Optional<DeviceSnapshot> update(String deviceId, UpdateDevice update) {
         return repository.findByDeviceId(deviceId)
                 .map(device -> {

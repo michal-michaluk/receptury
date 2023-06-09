@@ -8,6 +8,10 @@ public record UpdateDevice(
         @Valid Settings settings,
         @Valid Ownership ownership) {
 
+    public static UpdateDevice update(Ownership ownership, Location location) {
+        return new UpdateDevice(location, null, null, ownership);
+    }
+
     public void apply(Device device) {
         if (location != null) {
             device.updateLocation(location);

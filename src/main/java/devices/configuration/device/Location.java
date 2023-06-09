@@ -2,7 +2,7 @@ package devices.configuration.device;
 
 import java.math.BigDecimal;
 
-record Location(
+public record Location(
         String street, String houseNumber,
         String city, String postalCode,
         String state, String country,

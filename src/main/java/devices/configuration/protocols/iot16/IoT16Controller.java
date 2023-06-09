@@ -2,6 +2,7 @@ package devices.configuration.protocols.iot16;
 
 import devices.configuration.intervals.IntervalsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,11 +17,13 @@ class IoT16Controller {
 
     private final Clock clock;
     private final IntervalsService intervals;
+    private final ApplicationEventPublisher publisher;
 
     @PostMapping(path = "/protocols/iot16/bootnotification/{deviceId}",
             consumes = "application/json", produces = "application/json")
     BootNotificationResponse handleBootNotification(@PathVariable String deviceId,
                                                     @RequestBody BootNotificationRequest request) {
+        publisher.publishEvent(request.toBootNotificationEvent(deviceId));
         return new BootNotificationResponse(
                 Instant.now(clock).toString(),
                 intervals.calculateInterval(request.toDevice(deviceId)),

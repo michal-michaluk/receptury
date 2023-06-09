@@ -17,7 +17,7 @@ class Device {
     private OpeningHours openingHours;
     private Settings settings;
 
-    public static Device create(String deviceId) {
+    static Device create(String deviceId) {
         return new Device(
                 deviceId,
                 new ArrayList<>(),
@@ -82,9 +82,5 @@ class Device {
                 violations,
                 visibility
         );
-    }
-
-    public String deviceId() {
-        return deviceId;
     }
 }
