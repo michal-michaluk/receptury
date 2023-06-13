@@ -1,16 +1,13 @@
 package devices.configuration.tools;
 
-import devices.configuration.device.DomainEvent;
-
 public interface LegacyDomainEvent {
 
-    static DomainEvent normalise(DomainEvent event) {
-        if (event instanceof LegacyDomainEvent) {
-            return ((LegacyDomainEvent) event).normalise();
-        } else {
-            return event;
-        }
+    static <T> T normalise(T event) {
+        return switch (event) {
+            case LegacyDomainEvent legacy -> legacy.normalise();
+            default -> event;
+        };
     }
 
-    DomainEvent normalise();
+    <T> T normalise();
 }

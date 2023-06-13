@@ -1,8 +1,8 @@
 package devices.configuration.intervals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import devices.configuration.configs.FeaturesConfigurationEntity;
-import devices.configuration.configs.FeaturesConfigurationRepository;
+import devices.configuration.tools.FeaturesConfigurationEntity;
+import devices.configuration.tools.FeaturesConfigurationRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

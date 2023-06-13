@@ -8,7 +8,7 @@ public record Location(
         String state, String country,
         Coordinates coordinates) {
 
-    record Coordinates(BigDecimal longitude,
-                       BigDecimal latitude) {
+    public record Coordinates(BigDecimal longitude,
+                              BigDecimal latitude) {
     }
 }

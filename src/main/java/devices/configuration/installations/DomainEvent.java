@@ -13,15 +13,20 @@ import devices.configuration.protocols.BootNotification;
         @JsonSubTypes.Type(value = DomainEvent.BootNotificationConfirmed.class, name = "BootNotificationConfirmed_v1"),
         @JsonSubTypes.Type(value = DomainEvent.InstallationCompleted.class, name = "InstallationCompleted_v1"),
 })
-interface DomainEvent {
-    record InstallationStarted(String workOrderId, WorkOrder order) implements DomainEvent {}
+public sealed interface DomainEvent {
+    record InstallationStarted(String orderId, WorkOrder order) implements DomainEvent {
+    }
 
-    record DeviceAssigned(String workOrderId, String deviceId) implements DomainEvent {}
+    record DeviceAssigned(String orderId, String deviceId) implements DomainEvent {
+    }
 
-    record LocationPredefined(String workOrderId, String deviceId, Location location) implements DomainEvent {}
+    record LocationPredefined(String orderId, String deviceId, Location location) implements DomainEvent {
+    }
 
-    record BootNotificationConfirmed(String workOrderId, String deviceId,
-                                     BootNotification boot, boolean confirmed) implements DomainEvent {}
+    record BootNotificationConfirmed(String orderId, String deviceId,
+                                     BootNotification boot, boolean confirmed) implements DomainEvent {
+    }
 
-    record InstallationCompleted(String workOrderId, String deviceId) implements DomainEvent {}
+    record InstallationCompleted(String orderId, String deviceId) implements DomainEvent {
+    }
 }

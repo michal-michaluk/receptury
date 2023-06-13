@@ -16,7 +16,7 @@ class IntegrationConfiguration {
 //        kafkaContainer.start();
 //        System.setProperty("spring.kafka.bootstrap-servers", kafkaContainer.getBootstrapServers());
 
-        var postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:9.6.12"))
+        var postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.3-alpine"))
                 .withReuse(true);
         postgreSQLContainer.start();
         System.setProperty("spring.datasource.url", postgreSQLContainer.getJdbcUrl());

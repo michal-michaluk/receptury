@@ -2,8 +2,8 @@ package devices.configuration.intervals;
 
 import devices.configuration.IntegrationTest;
 import devices.configuration.JsonAssert;
-import devices.configuration.configs.FeaturesConfigurationEntity;
-import devices.configuration.configs.FeaturesConfigurationRepository;
+import devices.configuration.tools.FeaturesConfigurationEntity;
+import devices.configuration.tools.FeaturesConfigurationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;

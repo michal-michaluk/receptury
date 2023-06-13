@@ -4,22 +4,22 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.vladmihalcea.hibernate.type.util.ObjectMapperSupplier;
-import devices.configuration.device.DomainEvent;
 import devices.configuration.tools.EventTypes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 
@@ -50,9 +50,6 @@ public class JsonConfiguration implements ObjectMapperSupplier {
         return new MappingJackson2HttpMessageConverter(OBJECT_MAPPER);
     }
 
-    /*
-     * used for hibernate's object as json serialisation
-     */
     @Override
     public ObjectMapper get() {
         return OBJECT_MAPPER;
@@ -62,14 +59,17 @@ public class JsonConfiguration implements ObjectMapperSupplier {
     private void initEventTypes() {
         DeserializationConfig config = OBJECT_MAPPER.getDeserializationConfig();
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
-        AnnotatedClass domainEventClass = AnnotatedClassResolver.resolve(config, OBJECT_MAPPER.constructType(DomainEvent.class), config);
-        List<NamedType> subtypes = ai.findSubtypes(domainEventClass);
-
-        EventTypes.init(subtypes.stream()
+        Map<Class<?>, EventTypes.Type> subtypes = Stream.of(
+                        devices.configuration.device.DomainEvent.class,
+                        devices.configuration.installations.DomainEvent.class
+                )
+                .map(type -> AnnotatedClassResolver.resolve(config, OBJECT_MAPPER.constructType(type), config))
+                .map(ai::findSubtypes)
+                .flatMap(Collection::stream)
                 .collect(Collectors.toMap(
                         NamedType::getType,
                         type -> EventTypes.Type.of(type.getName())
-                ))
-        );
+                ));
+        EventTypes.init(subtypes);
     }
 }

@@ -1,4 +1,4 @@
-package devices.configuration.configs;
+package devices.configuration.tools;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

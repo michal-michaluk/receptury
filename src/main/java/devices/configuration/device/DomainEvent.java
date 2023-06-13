@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
         @JsonSubTypes.Type(value = DomainEvent.LocationUpdated.class, name = "LocationUpdated_v1"),
         @JsonSubTypes.Type(value = DomainEvent.SettingsUpdated.class, name = "SettingsUpdated_v1")
 })
-interface DomainEvent {
+public interface DomainEvent {
     record LocationUpdated(String deviceId, Location location) implements DomainEvent {
     }
 

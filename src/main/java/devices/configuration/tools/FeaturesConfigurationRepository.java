@@ -1,4 +1,4 @@
-package devices.configuration.configs;
+package devices.configuration.tools;
 
 import org.springframework.data.repository.CrudRepository;
 
