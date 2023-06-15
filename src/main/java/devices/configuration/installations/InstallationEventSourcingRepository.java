@@ -18,6 +18,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +32,9 @@ class InstallationEventSourcingRepository implements InstallationRepository {
 
     @Override
     public InstallationProcess getByOrderId(String orderId) {
-        return recreateObject(repository.findByOrderId(orderId));
+        List<InstallationEventEntity> history = repository.findByOrderId(orderId);
+        Collections.reverse(history);
+        return recreateObject(history);
     }
 
     @Override
@@ -64,8 +67,9 @@ class InstallationEventSourcingRepository implements InstallationRepository {
             publisher.publishEvent(event);
         });
         if (!process.events.isEmpty()) {
-            publisher.publishEvent(process.toSnapshot());
+            publisher.publishEvent(process.asState());
         }
+        process.events.clear();
     }
 
     @Repository

@@ -2,5 +2,7 @@ package devices.configuration.installations;
 
 import devices.configuration.device.Ownership;
 
-record WorkOrder(String orderId, Ownership ownership) {
+import javax.validation.constraints.NotNull;
+
+record WorkOrder(@NotNull String orderId, @NotNull Ownership ownership) {
 }

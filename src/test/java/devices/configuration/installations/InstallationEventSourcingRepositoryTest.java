@@ -19,23 +19,23 @@ class InstallationEventSourcingRepositoryTest {
 
     @Test
     void noProcessFoundByOrderId() {
-        Assertions.assertThatThrownBy(
-                        () -> transactional(() -> repository.getByOrderId("not-existing")))
-                .isInstanceOf(IllegalStateException.class);
+        Assertions.assertThatThrownBy(() -> transactional(
+                () -> repository.getByOrderId("not-existing")
+        )).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void noProcessFoundByDeviceId() {
-        Assertions.assertThatThrownBy(
-                        () -> transactional(() -> repository.getByDeviceId("not-existing")))
-                .isInstanceOf(IllegalStateException.class);
+        Assertions.assertThatThrownBy(() -> transactional(
+                () -> repository.getByDeviceId("not-existing")
+        )).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void loadNewProcessByOrderId() {
         InstallationProcess process = given().newProcess();
 
-        transactional(() -> repository.save(process));
+        whenProcessIsSaved(process);
 
         assertThat(transactional(() -> repository.getByOrderId(process.orderId)))
                 .isExactlyLike(process);
@@ -45,7 +45,7 @@ class InstallationEventSourcingRepositoryTest {
     void loadProcessByDeviceId() {
         InstallationProcess process = given().withDeviceAssigned();
 
-        transactional(() -> repository.save(process));
+        whenProcessIsSaved(process);
 
         assertThat(transactional(() -> repository.getByOrderId(process.orderId)))
                 .isExactlyLike(process);
@@ -55,7 +55,7 @@ class InstallationEventSourcingRepositoryTest {
     void loadAlmostCompletedProcessByDeviceId() {
         InstallationProcess process = given().almostCompleted();
 
-        transactional(() -> repository.save(process));
+        whenProcessIsSaved(process);
 
         assertThat(transactional(() -> repository.getByOrderId(process.orderId)))
                 .isExactlyLike(process);
@@ -65,7 +65,7 @@ class InstallationEventSourcingRepositoryTest {
     void hideCompletedProcessByOrderId() {
         InstallationProcess process = given().completed();
 
-        transactional(() -> repository.save(process));
+        whenProcessIsSaved(process);
 
         Assertions.assertThatThrownBy(
                         () -> transactional(() -> repository.getByOrderId(process.orderId)))
@@ -76,10 +76,14 @@ class InstallationEventSourcingRepositoryTest {
     void hideCompletedProcessByDeviceId() {
         InstallationProcess process = given().completed();
 
-        transactional(() -> repository.save(process));
+        whenProcessIsSaved(process);
 
         Assertions.assertThatThrownBy(
                         () -> transactional(() -> repository.getByDeviceId(process.deviceId)))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    private void whenProcessIsSaved(InstallationProcess process) {
+        transactional(() -> repository.save(process));
     }
 }

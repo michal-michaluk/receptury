@@ -10,7 +10,7 @@ import devices.configuration.protocols.BootNotification;
         @JsonSubTypes.Type(value = DomainEvent.InstallationStarted.class, name = "InstallationStarted_v1"),
         @JsonSubTypes.Type(value = DomainEvent.DeviceAssigned.class, name = "DeviceAssigned_v1"),
         @JsonSubTypes.Type(value = DomainEvent.LocationPredefined.class, name = "LocationPredefined_v1"),
-        @JsonSubTypes.Type(value = DomainEvent.BootNotificationConfirmed.class, name = "BootNotificationConfirmed_v1"),
+        @JsonSubTypes.Type(value = DomainEvent.BootNotificationProcessed.class, name = "BootNotificationConfirmed_v1"),
         @JsonSubTypes.Type(value = DomainEvent.InstallationCompleted.class, name = "InstallationCompleted_v1"),
 })
 public sealed interface DomainEvent {
@@ -23,7 +23,7 @@ public sealed interface DomainEvent {
     record LocationPredefined(String orderId, String deviceId, Location location) implements DomainEvent {
     }
 
-    record BootNotificationConfirmed(String orderId, String deviceId,
+    record BootNotificationProcessed(String orderId, String deviceId,
                                      BootNotification boot, boolean confirmed) implements DomainEvent {
     }
 

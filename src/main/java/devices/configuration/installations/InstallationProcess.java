@@ -28,11 +28,11 @@ class InstallationProcess {
 
     static InstallationProcess startInstallationProcessFor(WorkOrder order) {
         Objects.requireNonNull(order.orderId());
-        Objects.requireNonNull(order.ownership().operator());
-        Objects.requireNonNull(order.ownership().provider());
+        assert order.ownership().isOwned();
         var event = new InstallationStarted(order.orderId(), order);
         var process = new InstallationProcess();
         process.handle(event);
+        process.events.add(event);
         return process;
     }
 
@@ -43,7 +43,7 @@ class InstallationProcess {
                 case InstallationStarted e -> process.handle(e);
                 case DeviceAssigned e -> process.handle(e);
                 case LocationPredefined e -> process.handle(e);
-                case BootNotificationConfirmed e -> process.handle(e);
+                case BootNotificationProcessed e -> process.handle(e);
                 case InstallationCompleted e -> process.handle(e);
             }
         return process;
@@ -87,13 +87,13 @@ class InstallationProcess {
         Objects.requireNonNull(boot);
 
         if (finalized) return;
-        boolean bootConfirmed = Objects.equals(this.boot, boot) && this.bootConfirmation;
-        var event = new BootNotificationConfirmed(orderId, deviceId, boot, bootConfirmed);
+        boolean bootConfirmed = this.bootConfirmation && Objects.equals(this.boot, boot);
+        var event = new BootNotificationProcessed(orderId, deviceId, boot, bootConfirmed);
         handle(event);
         events.add(event);
     }
 
-    private void handle(BootNotificationConfirmed event) {
+    private void handle(BootNotificationProcessed event) {
         this.boot = event.boot();
         this.bootConfirmation = event.confirmed();
     }
@@ -101,40 +101,40 @@ class InstallationProcess {
     void confirmBootData() {
         if (bootConfirmation) return;
         this.bootConfirmation = true;
-        var event = new BootNotificationConfirmed(orderId, deviceId, boot, bootConfirmation);
+        var event = new BootNotificationProcessed(orderId, deviceId, boot, bootConfirmation);
         events.add(event);
     }
 
     CompletionResult complete() {
         ensureProcessIsActive();
         boolean locationIsDefined = location != null;
-        boolean bootIsConfirmed = boot != null && bootConfirmation;
+        boolean bootIsConfirmed = boot != null && this.bootConfirmation;
         if (locationIsDefined && bootIsConfirmed) {
             var event = new InstallationCompleted(orderId, deviceId);
             handle(event);
             events.add(event);
         }
-        return new CompletionResult(
-                locationIsDefined,
-                bootIsConfirmed,
-                location,
-                ownership
-        );
+        return CompletionResult.builder()
+                .locationIsDefined(locationIsDefined)
+                .bootIsConfirmed(bootIsConfirmed)
+                .location(location)
+                .ownership(ownership)
+                .build();
     }
 
     private void handle(InstallationCompleted event) {
         finalized = true;
     }
 
-    InstallationProcessState toSnapshot() {
+    InstallationProcessState asState() {
         return new InstallationProcessState(
                 orderId, deviceId, state()
         );
     }
 
     private State state() {
-        if (finalized) return State.FINALIZED;
-        if (bootConfirmation) return State.BOOTED;
+        if (finalized) return State.COMPLETED;
+        if (boot != null) return State.BOOTED;
         if (deviceId != null) return State.DEVICE_ASSIGNED;
         return State.PENDING;
     }
