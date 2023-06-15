@@ -14,7 +14,7 @@ public class DeviceService {
 
     @Transactional
     public DeviceSnapshot createNewDevice(String deviceId, UpdateDevice update) {
-        Device device = Device.create(deviceId);
+        Device device = Device.newDevice(deviceId);
         update.apply(device);
         repository.save(device);
         return device.toSnapshot();

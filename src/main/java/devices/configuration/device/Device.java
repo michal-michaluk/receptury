@@ -17,7 +17,7 @@ class Device {
     private OpeningHours openingHours;
     private Settings settings;
 
-    static Device create(String deviceId) {
+    static Device newDevice(String deviceId) {
         return new Device(
                 deviceId,
                 new ArrayList<>(),
@@ -28,10 +28,21 @@ class Device {
         );
     }
 
+    void resetToDefaults() {
+        updateLocation(null);
+        updateOpeningHours(OpeningHours.alwaysOpen());
+        updateSettings(Settings.defaultSettings());
+    }
+
     void assignTo(Ownership ownership) {
+        Objects.requireNonNull(ownership);
         if (!Objects.equals(this.ownership, ownership)) {
             this.ownership = ownership;
             events.add(new OwnershipUpdated(deviceId, ownership));
+
+            if (ownership.isUnowned()) {
+                resetToDefaults();
+            }
         }
     }
 
@@ -43,6 +54,7 @@ class Device {
     }
 
     void updateOpeningHours(OpeningHours openingHours) {
+        Objects.requireNonNull(openingHours);
         if (!Objects.equals(this.openingHours, openingHours)) {
             this.openingHours = openingHours;
             events.add(new OpeningHoursUpdated(deviceId, openingHours));
@@ -50,6 +62,7 @@ class Device {
     }
 
     void updateSettings(Settings settings) {
+        Objects.requireNonNull(settings);
         Settings merged = this.settings.merge(settings);
         if (!Objects.equals(this.settings, merged)) {
             this.settings = merged;

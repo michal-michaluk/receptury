@@ -4,11 +4,11 @@ import lombok.Builder;
 
 @Builder
 record Violations(
-        Boolean operatorNotAssigned,
-        Boolean providerNotAssigned,
-        Boolean locationMissing,
-        Boolean showOnMapButMissingLocation,
-        Boolean showOnMapButNoPublicAccess) {
+        boolean operatorNotAssigned,
+        boolean providerNotAssigned,
+        boolean locationMissing,
+        boolean showOnMapButMissingLocation,
+        boolean showOnMapButNoPublicAccess) {
 
     boolean isValid() {
         return !operatorNotAssigned
