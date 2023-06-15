@@ -23,14 +23,14 @@ class Device {
                 new ArrayList<>(),
                 Ownership.unowned(),
                 null,
-                OpeningHours.alwaysOpen(),
+                OpeningHours.alwaysOpened(),
                 Settings.defaultSettings()
         );
     }
 
     void resetToDefaults() {
         updateLocation(null);
-        updateOpeningHours(OpeningHours.alwaysOpen());
+        updateOpeningHours(OpeningHours.alwaysOpened());
         updateSettings(Settings.defaultSettings());
     }
 
@@ -80,13 +80,13 @@ class Device {
                 .build();
     }
 
-    DeviceSnapshot toSnapshot() {
+    DeviceConfiguration toDeviceConfiguration() {
         Violations violations = checkViolations();
         Visibility visibility = Visibility.basedOn(
                 violations.isValid() && settings.isPublicAccess(),
                 settings.isShowOnMap()
         );
-        return new DeviceSnapshot(
+        return new DeviceConfiguration(
                 deviceId,
                 ownership,
                 location,

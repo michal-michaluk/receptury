@@ -1,6 +1,6 @@
 package devices.configuration.device;
 
-public record DeviceSnapshot(
+public record DeviceConfiguration(
         String deviceId,
         Ownership ownership,
         Location location,

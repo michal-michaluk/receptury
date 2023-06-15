@@ -1,6 +1,8 @@
-package devices.configuration.device;
+package devices.configuration.search;
 
-import devices.configuration.device.DomainEvent.DeviceStatuses;
+import devices.configuration.device.DeviceConfiguration;
+import devices.configuration.device.Ownership;
+import devices.configuration.protocols.DeviceStatuses;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.List;
@@ -20,13 +23,14 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
+@Transactional
 @AllArgsConstructor
-class ReadModelsProjection implements DeviceReads {
+class ReadModelsProjection {
 
-    private final JpaRepository repository;
+    private final DeviceReadsRepository repository;
 
     @EventListener
-    public void handle(DeviceSnapshot details) {
+    public void handle(DeviceConfiguration details) {
         DeviceReadsEntity entity = repository.findById(details.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(details.deviceId()));
 
@@ -52,27 +56,27 @@ class ReadModelsProjection implements DeviceReads {
         repository.save(entity);
     }
 
-    @Override
-    public Optional<DeviceSnapshot> findById(String deviceId) {
+    @Transactional(readOnly = true)
+    public Optional<DeviceConfiguration> findById(String deviceId) {
         return repository.findById(deviceId)
                 .map(DeviceReadsEntity::getDetails);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public List<DevicePin> findAllPins(String provider) {
         return repository.findAllByProvider(provider)
                 .map(DeviceReadsEntity::getPin)
                 .toList();
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public Page<DeviceSummary> findAllSummary(String provider, Pageable pageable) {
         return repository.findAllByProvider(provider, pageable)
                 .map(DeviceReadsEntity::getSummary);
     }
 
     @Repository
-    interface JpaRepository extends PagingAndSortingRepository<DeviceReadsEntity, String> {
+    interface DeviceReadsRepository extends PagingAndSortingRepository<DeviceReadsEntity, String> {
         Stream<DeviceReadsEntity> findAllByProvider(String provider);
 
         Page<DeviceReadsEntity> findAllByProvider(String provider, Pageable pageable);
@@ -103,19 +107,19 @@ class ReadModelsProjection implements DeviceReads {
 
         @Type(type = "jsonb")
         @Column(columnDefinition = "jsonb")
-        private DeviceSnapshot details;
+        private DeviceConfiguration details;
 
         @Type(type = "jsonb")
         @Column(columnDefinition = "jsonb")
         private DeviceStatuses statuses;
 
-        public DeviceReadsEntity(String deviceId) {
+        DeviceReadsEntity(String deviceId) {
             this.deviceId = deviceId;
         }
 
-        public DeviceReadsEntity setOwnership(Ownership ownership) {
-            operator = Optional.ofNullable(ownership).map(Ownership::operator).orElse(null);
-            provider = Optional.ofNullable(ownership).map(Ownership::provider).orElse(null);
+        DeviceReadsEntity setOwnership(Ownership ownership) {
+            operator = ownership.operator();
+            provider = ownership.provider();
             return this;
         }
     }

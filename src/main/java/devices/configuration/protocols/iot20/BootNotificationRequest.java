@@ -1,7 +1,5 @@
 package devices.configuration.protocols.iot20;
 
-import devices.configuration.intervals.DeviceInfo;
-import devices.configuration.intervals.Protocols;
 import devices.configuration.protocols.BootNotification;
 
 record BootNotificationRequest(
@@ -31,18 +29,9 @@ record BootNotificationRequest(
         Watchdog
     }
 
-    DeviceInfo toDevice(String deviceId) {
-        return new DeviceInfo(
-                deviceId,
-                device.vendorName(),
-                device.model(),
-                Protocols.IoT20
-        );
-    }
-
     BootNotification toBootNotificationEvent(String deviceId) {
         return new BootNotification(
-                deviceId,
+                deviceId, BootNotification.Protocols.IoT20,
                 device.vendorName, device.model,
                 device.serialNumber, device.firmwareVersion
         );

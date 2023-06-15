@@ -1,14 +1,10 @@
 package devices.configuration.device;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import java.util.Optional;
 
 interface DeviceRepository {
-    Page<Device> findAll(Pageable pageable);
 
-    Optional<Device> findByDeviceId(String deviceId);
+    Optional<Device> get(String deviceId);
 
     void save(Device device);
 }

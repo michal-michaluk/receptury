@@ -1,6 +1,8 @@
-package devices.configuration.device;
+package devices.configuration.search;
 
-import devices.configuration.device.DomainEvent.DeviceStatuses;
+import devices.configuration.device.DeviceConfiguration;
+import devices.configuration.device.Location;
+import devices.configuration.protocols.DeviceStatuses;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +14,7 @@ record DevicePin(
 
     enum Status {AVAILABLE, CHARGING, FAULTED}
 
-    static DevicePin ofNullable(DeviceSnapshot details, DeviceStatuses statuses) {
+    static DevicePin ofNullable(DeviceConfiguration details, DeviceStatuses statuses) {
         if (details == null || details.location() == null) {
             return null;
         }

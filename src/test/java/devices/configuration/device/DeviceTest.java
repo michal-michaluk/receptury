@@ -3,8 +3,8 @@ package devices.configuration.device;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
+import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
 import static devices.configuration.device.DeviceFixture.*;
-import static devices.configuration.device.DeviceSnapshotAssert.assertThat;
 import static devices.configuration.device.Violations.builder;
 
 class DeviceTest {
@@ -72,10 +72,10 @@ class DeviceTest {
     @Test
     void assignStationToOwner() {
         Device device = givenDevice();
-        device.assignTo(someOwnership());
+        device.assignTo(someOtherOwnership());
 
         assertThat(device)
-                .hasOwnership(someOwnership())
+                .hasOwnership(someOtherOwnership())
                 .hasNoViolations();
     }
 
@@ -89,7 +89,7 @@ class DeviceTest {
                 .hasOwnership(Ownership.unowned())
                 .hasSettings(Settings.defaultSettings())
                 .hasLocation(null)
-                .hasOpeningHours(OpeningHours.alwaysOpen())
+                .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasViolationsLikeNotConfiguredDevice();
     }
 
@@ -102,7 +102,7 @@ class DeviceTest {
                 .hasOwnership(DeviceFixture.ownership())
                 .hasSettings(Settings.defaultSettings())
                 .hasLocation(null)
-                .hasOpeningHours(OpeningHours.alwaysOpen())
+                .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasViolations(Violations.builder()
                         .locationMissing(true));
     }

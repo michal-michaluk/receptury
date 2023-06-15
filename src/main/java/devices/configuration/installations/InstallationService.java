@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class InstallationService {
@@ -15,44 +17,52 @@ public class InstallationService {
     private final InstallationRepository repository;
     private final DeviceService devices;
 
-    void initInstallation(WorkOrder order) {
+    @EventListener
+    public void handleWorkOrder(WorkOrder order) {
         InstallationProcess process = InstallationProcess.startInstallationProcessFor(order);
         repository.save(process);
     }
 
-    void assignDevice(String workOrderId, String deviceId) {
-        InstallationProcess process = repository.getByOrderId(workOrderId);
+    void assignDevice(String orderId, String deviceId) {
+        InstallationProcess process = repository.getByOrderId(orderId);
         process.assignDevice(deviceId);
         repository.save(process);
     }
 
-    void assignLocation(String deviceId, Location location) {
-        InstallationProcess process = repository.getByDeviceId(deviceId);
+    void assignLocation(String orderId, Location location) {
+        InstallationProcess process = repository.getByOrderId(orderId);
         process.assignLocation(location);
         repository.save(process);
     }
 
     @EventListener
     public void handleBootNotification(BootNotification boot) {
-        InstallationProcess process = repository.getByDeviceId(boot.deviceId());
-        process.handleBootNotification(boot);
-        repository.save(process);
+        repository.getByDeviceId(boot.deviceId())
+                .ifPresent(process -> {
+                    process.handleBootNotification(boot);
+                    repository.save(process);
+                });
     }
 
-    void confirmBootData(String deviceId) {
-        InstallationProcess process = repository.getByDeviceId(deviceId);
+    void confirmBootData(String orderId) {
+        InstallationProcess process = repository.getByOrderId(orderId);
         process.confirmBootData();
         repository.save(process);
     }
 
-    CompletionResult complete(String deviceId) {
-        InstallationProcess process = repository.getByDeviceId(deviceId);
+    CompletionResult complete(String orderId) {
+        InstallationProcess process = repository.getByOrderId(orderId);
         CompletionResult finalization = process.complete();
         if (finalization.isConfirmed()) {
-            devices.createNewDevice(deviceId, UpdateDevice.update(
+            devices.createNewDevice(process.deviceId, UpdateDevice.use(
                     finalization.ownership(), finalization.location())
             );
         }
         return finalization;
+    }
+
+    public Optional<InstallationProcessState> getByDeviceId(String deviceId) {
+        return repository.getByDeviceId(deviceId)
+                .map(InstallationProcess::asState);
     }
 }

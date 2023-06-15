@@ -1,5 +1,7 @@
 package devices.configuration.intervals;
 
+import devices.configuration.protocols.BootNotification;
+
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -7,59 +9,52 @@ import java.util.stream.Stream;
 record IntervalRules(
         List<DeviceIdRule> byIds,
         List<ModelRule> byModel,
-        List<ProtocolRule> byProtocol,
         int defSeconds) {
 
     static IntervalRules defaultRules() {
-        return new IntervalRules(List.of(), List.of(), List.of(), 1800);
+        return new IntervalRules(List.of(), List.of(), 1800);
     }
 
-    static DeviceIdRule byDeviceIdRule(int seconds, Set<String> deviceId) {
+    static DeviceIdRule deviceIdRule(int seconds, Set<String> deviceId) {
         return new DeviceIdRule(seconds, new TreeSet<>(deviceId));
     }
 
-    static ModelRule byModelRule(int seconds, String vendor, Pattern model) {
-        return new ModelRule(seconds, vendor, model);
+    static ModelRule modelRule(int seconds, String vendor, Pattern model) {
+        return new ModelRule(seconds, vendor, model, null);
     }
 
-    static ProtocolRule byProtocolRule(int seconds, Protocols protocol) {
-        return new ProtocolRule(seconds, protocol);
+    static ModelRule firmwareRule(int seconds, String vendor, Pattern model, Pattern firmware) {
+        return new ModelRule(seconds, vendor, model, firmware);
     }
 
-    int calculateInterval(DeviceInfo device) {
-        return Stream.of(byIds, byModel, byProtocol)
+    int calculateInterval(BootNotification boot) {
+        return Stream.of(byIds, byModel)
                 .flatMap(Collection::stream)
-                .filter(rule -> rule.matches(device))
+                .filter(rule -> rule.matches(boot))
                 .findFirst()
                 .map(Rule::seconds)
                 .orElse(defSeconds);
     }
 
     interface Rule {
-        boolean matches(DeviceInfo device);
+        boolean matches(BootNotification boot);
 
         int seconds();
     }
 
     record DeviceIdRule(int seconds, SortedSet<String> devices) implements Rule {
         @Override
-        public boolean matches(DeviceInfo device) {
-            return devices.contains(device.deviceId());
+        public boolean matches(BootNotification boot) {
+            return devices.contains(boot.deviceId());
         }
     }
 
-    record ModelRule(int seconds, String vendor, Pattern model) implements Rule {
+    record ModelRule(int seconds, String vendor, Pattern model, Pattern firmware) implements Rule {
         @Override
-        public boolean matches(DeviceInfo device) {
-            return Objects.equals(vendor, device.vendor())
-                    && model.matcher(device.model()).matches();
-        }
-    }
-
-    record ProtocolRule(int seconds, Protocols protocol) implements Rule {
-        @Override
-        public boolean matches(DeviceInfo device) {
-            return Objects.equals(protocol, device.protocol());
+        public boolean matches(BootNotification boot) {
+            return Objects.equals(vendor, boot.vendor())
+                   && model.matcher(boot.model()).matches()
+                   && (firmware == null || firmware.matcher(boot.firmware()).matches());
         }
     }
 }

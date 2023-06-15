@@ -24,7 +24,7 @@ class InstallationProcess {
     private BootNotification boot;
     private Location location;
     private boolean bootConfirmation;
-    private boolean finalized;
+    private boolean active;
 
     static InstallationProcess startInstallationProcessFor(WorkOrder order) {
         Objects.requireNonNull(order.orderId());
@@ -52,6 +52,7 @@ class InstallationProcess {
     private void handle(InstallationStarted event) {
         this.orderId = event.orderId();
         this.ownership = event.order().ownership();
+        this.active = true;
     }
 
     void assignDevice(String deviceId) {
@@ -86,7 +87,7 @@ class InstallationProcess {
     void handleBootNotification(BootNotification boot) {
         Objects.requireNonNull(boot);
 
-        if (finalized) return;
+        if (!active) return;
         boolean bootConfirmed = this.bootConfirmation && Objects.equals(this.boot, boot);
         var event = new BootNotificationProcessed(orderId, deviceId, boot, bootConfirmed);
         handle(event);
@@ -123,7 +124,7 @@ class InstallationProcess {
     }
 
     private void handle(InstallationCompleted event) {
-        finalized = true;
+        active = false;
     }
 
     InstallationProcessState asState() {
@@ -133,13 +134,13 @@ class InstallationProcess {
     }
 
     private State state() {
-        if (finalized) return State.COMPLETED;
+        if (!active) return State.COMPLETED;
         if (boot != null) return State.BOOTED;
         if (deviceId != null) return State.DEVICE_ASSIGNED;
         return State.PENDING;
     }
 
     private void ensureProcessIsActive() {
-        if (finalized) throw new IllegalStateException();
+        if (!active) throw new IllegalStateException();
     }
 }

@@ -1,33 +1,35 @@
 package devices.configuration.protocols.iot16;
 
-import devices.configuration.intervals.IntervalsService;
+import devices.configuration.protocols.CommunicationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Clock;
-import java.time.Instant;
+import static devices.configuration.protocols.iot16.BootNotificationResponse.Status.*;
 
 @RestController
 @RequiredArgsConstructor
 class IoT16Controller {
 
-    private final Clock clock;
-    private final IntervalsService intervals;
-    private final ApplicationEventPublisher publisher;
+    private final CommunicationService service;
 
     @PostMapping(path = "/protocols/iot16/bootnotification/{deviceId}",
             consumes = "application/json", produces = "application/json")
     BootNotificationResponse handleBootNotification(@PathVariable String deviceId,
                                                     @RequestBody BootNotificationRequest request) {
-        publisher.publishEvent(request.toBootNotificationEvent(deviceId));
-        return new BootNotificationResponse(
-                Instant.now(clock).toString(),
-                intervals.calculateInterval(request.toDevice(deviceId)),
-                BootNotificationResponse.Status.Accepted);
+        return service.handleBoot(request.toBootNotificationEvent(deviceId))
+                .map(resp -> BootNotificationResponse.builder()
+                        .currentTime(resp.serverTime().toString())
+                        .interval(resp.intervalInSeconds())
+                        .status(resp.state(state -> switch (state) {
+                                    case UNKNOWN -> Rejected;
+                                    case IN_INSTALLATION -> Pending;
+                                    case EXISTING -> Accepted;
+                                })
+                        ).build()
+                );
     }
 
 }

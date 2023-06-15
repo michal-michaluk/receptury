@@ -1,9 +1,9 @@
-package devices.configuration;
-
-import java.time.Clock;
+package devices.configuration.tools;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
 
 @Configuration
 class ClockConfiguration {

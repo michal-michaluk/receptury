@@ -1,7 +1,7 @@
 package devices.configuration.device;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import devices.configuration.JsonConfiguration;
+import devices.configuration.tools.JsonConfiguration;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,8 +22,26 @@ public class DeviceFixture {
                 new ArrayList<>(),
                 ownership(),
                 location(),
-                OpeningHours.alwaysOpen(),
+                OpeningHours.alwaysOpened(),
                 Settings.defaultSettings()
+        );
+    }
+
+    @NotNull
+    public static DeviceConfiguration givenDeviceConfiguration() {
+        return givenDeviceConfiguration(randomId());
+    }
+
+    @NotNull
+    public static DeviceConfiguration givenDeviceConfiguration(String deviceId) {
+        return new DeviceConfiguration(
+                deviceId,
+                ownership(),
+                location(),
+                OpeningHours.alwaysOpened(),
+                Settings.defaultSettings(),
+                Violations.builder().build(),
+                Visibility.basedOn(true, false)
         );
     }
 
@@ -60,12 +78,12 @@ public class DeviceFixture {
     }
 
     @NotNull
-    public static Ownership someOwnership() {
+    public static Ownership someOtherOwnership() {
         return new Ownership("Devicex.pl", "public-devices");
     }
 
-    @NotNull
-    public static Settings settingsWithAutoStartOnly() throws JsonProcessingException {
+    @SneakyThrows
+    public static Settings settingsWithAutoStartOnly() {
         @Language("JSON") var json = """
                 {
                     "autoStart": true
@@ -74,10 +92,40 @@ public class DeviceFixture {
         return JsonConfiguration.OBJECT_MAPPER.readValue(json, Settings.class);
     }
 
+    @SneakyThrows
+    public static Settings settingsWithPublicAccessAndShowOnMapOnly() {
+        return Settings.builder()
+                .showOnMap(true)
+                .publicAccess(true)
+                .build();
+    }
+
     public static Settings settingsForPublicDevice() {
         return Settings.defaultSettings().toBuilder()
                 .showOnMap(true)
                 .publicAccess(true)
                 .build();
+    }
+
+    public static Device givenStepByStepConfiguredDevice() {
+        Device device = Device.newDevice(randomId());
+        device.assignTo(ownership());
+        device.updateLocation(location());
+        device.updateOpeningHours(OpeningHours.alwaysOpened());
+        device.updateSettings(Settings.defaultSettings());
+        return device;
+    }
+
+    @NotNull
+    public static OpeningHours closedAtWeekend() {
+        return OpeningHours.openAt(
+                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.closed24h(),
+                OpeningHours.OpeningTime.closed24h()
+        );
     }
 }

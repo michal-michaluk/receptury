@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static devices.configuration.installations.InstallationProcessAssert.assertThat;
-import static devices.configuration.protocols.BootNotificationFixture.boot;
+import static devices.configuration.protocols.CommunicationFixture.boot;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InstallationProcessTest {

@@ -4,12 +4,10 @@ import devices.configuration.tools.EventTypes;
 import devices.configuration.tools.LastEvents;
 import devices.configuration.tools.LegacyDomainEvent;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -19,10 +17,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static devices.configuration.device.DomainEvent.*;
 
@@ -34,53 +30,55 @@ class DeviceEventSourcingRepository implements DeviceRepository {
     private final ApplicationEventPublisher publisher;
 
     @Override
-    public Optional<Device> findByDeviceId(String deviceId) {
+    public Optional<Device> get(String deviceId) {
         List<DomainEvent> history = repository.findByDeviceId(deviceId).stream()
                 .map(DeviceEventEntity::getEvent)
                 .map(LegacyDomainEvent::normalise)
-                .toList();
+                .collect(Collectors.toList());
         if (history.isEmpty()) {
             return Optional.empty();
         }
+        Collections.reverse(history);
         LastEvents events = LastEvents.fromHistoryOf(history);
         Device device = new Device(deviceId, new ArrayList<>(),
                 events.getOrNull(OwnershipUpdated.class, OwnershipUpdated::ownership),
                 events.getOrNull(LocationUpdated.class, LocationUpdated::location),
-                events.getOrDefault(OpeningHoursUpdated.class, OpeningHoursUpdated::openingHours, OpeningHours.alwaysOpen()),
+                events.getOrDefault(OpeningHoursUpdated.class, OpeningHoursUpdated::openingHours, OpeningHours.alwaysOpened()),
                 events.getOrDefault(SettingsUpdated.class, SettingsUpdated::settings, Settings.defaultSettings())
         );
         return Optional.of(device);
     }
 
     @Override
-    public Page<Device> findAll(Pageable pageable) {
-        return Page.empty();
-    }
-
-    @Override
     public void save(Device device) {
-        device.events.forEach(event -> {
+        List<DomainEvent> events = emittedFrom(device);
+        events.forEach(event -> {
             repository.save(new DeviceEventEntity(
                     device.deviceId,
                     EventTypes.of(event),
                     event));
             publisher.publishEvent(event);
         });
-        if (!device.events.isEmpty()) {
-            publisher.publishEvent(device.toSnapshot());
+        if (!events.isEmpty()) {
+            publisher.publishEvent(device.toDeviceConfiguration());
         }
+    }
+
+    private static List<DomainEvent> emittedFrom(Device device) {
+        List<DomainEvent> emitted = List.copyOf(device.events);
+        device.events.clear();
+        return emitted;
     }
 
     @Repository
     interface EventRepository extends CrudRepository<DeviceEventEntity, UUID> {
         @Query(value = "select distinct on (type) *" +
-                " from device_events" +
-                " where device_id = :deviceId" +
-                " order by type, time desc", nativeQuery = true)
+                       " from device_events" +
+                       " where device_id = :deviceId" +
+                       " order by type, time desc", nativeQuery = true)
         List<DeviceEventEntity> findByDeviceId(String deviceId);
     }
 
-    @Data
     @Entity
     @Table(name = "device_events")
     @NoArgsConstructor
@@ -90,6 +88,7 @@ class DeviceEventSourcingRepository implements DeviceRepository {
         private String deviceId;
         private String type;
         private Instant time;
+        @Getter
         @Type(type = "jsonb")
         @Column(columnDefinition = "jsonb")
         private DomainEvent event;
@@ -110,7 +109,7 @@ class DeviceEventSourcingRepository implements DeviceRepository {
                 String operator,
                 String provider) implements LegacyDomainEvent {
             @Override
-            public DomainEvent normalise() {
+            public OwnershipUpdated normalise() {
                 return new OwnershipUpdated(deviceId,
                         new Ownership(operator, provider)
                 );

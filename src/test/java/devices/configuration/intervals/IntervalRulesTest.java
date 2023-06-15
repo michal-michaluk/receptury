@@ -9,54 +9,54 @@ class IntervalRulesTest {
 
     @Test
     void matchInFirstDeviceIdRule() {
-        DeviceInfo device = IntervalRulesFixture.matchingDeviceIdRule1();
+        var boot = IntervalRulesFixture.matchingDeviceIdRule1();
 
-        int interval = rules.calculateInterval(device);
+        int interval = rules.calculateInterval(boot);
 
         Assertions.assertThat(interval).isEqualTo(600);
     }
 
     @Test
     void matchInSecondDeviceIdRule() {
-        DeviceInfo device = IntervalRulesFixture.matchingDeviceIdRule2();
+        var boot = IntervalRulesFixture.matchingDeviceIdRule2();
 
-        int interval = rules.calculateInterval(device);
+        int interval = rules.calculateInterval(boot);
 
         Assertions.assertThat(interval).isEqualTo(2700);
     }
 
     @Test
     void matchInStrictModelRule() {
-        DeviceInfo device = IntervalRulesFixture.matchingStrictModelRule();
+        var boot = IntervalRulesFixture.matchingStrictModelRule();
 
-        int interval = rules.calculateInterval(device);
+        int interval = rules.calculateInterval(boot);
 
         Assertions.assertThat(interval).isEqualTo(60);
     }
 
     @Test
-    void matchInRegexpModelRule() {
-        DeviceInfo device = IntervalRulesFixture.matchingRegexModelRule();
+    void matchInRegexpFirmwareRule() {
+        var boot = IntervalRulesFixture.matchingRegexFirmwareRule();
 
-        int interval = rules.calculateInterval(device);
+        int interval = rules.calculateInterval(boot);
+
+        Assertions.assertThat(interval).isEqualTo(10);
+    }
+
+    @Test
+    void matchInRegexpModelRule() {
+        var boot = IntervalRulesFixture.matchingRegexModelRule();
+
+        int interval = rules.calculateInterval(boot);
 
         Assertions.assertThat(interval).isEqualTo(120);
     }
 
     @Test
-    void matchInProtocolRule() {
-        DeviceInfo device = IntervalRulesFixture.matchingProtocol20Rule();
-
-        int interval = rules.calculateInterval(device);
-
-        Assertions.assertThat(interval).isEqualTo(600);
-    }
-
-    @Test
     void returnDefaultInterval() {
-        DeviceInfo device = IntervalRulesFixture.notMatchingAnyRule();
+        var boot = IntervalRulesFixture.notMatchingAnyRule();
 
-        int interval = rules.calculateInterval(device);
+        int interval = rules.calculateInterval(boot);
 
         Assertions.assertThat(interval).isEqualTo(1800);
     }

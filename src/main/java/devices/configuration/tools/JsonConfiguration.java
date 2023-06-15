@@ -1,4 +1,4 @@
-package devices.configuration;
+package devices.configuration.tools;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -10,7 +10,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.vladmihalcea.hibernate.type.util.ObjectMapperSupplier;
-import devices.configuration.tools.EventTypes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -34,8 +33,6 @@ public class JsonConfiguration implements ObjectMapperSupplier {
             .setVisibility(PropertyAccessor.FIELD, ANY)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, true)
-            .configure(MapperFeature.AUTO_DETECT_FIELDS, true)
             .configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false)
             .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
 

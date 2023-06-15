@@ -1,7 +1,7 @@
 spring:
   jpa:
     show-sql: true
-    hibernate.ddl-auto: update
+    hibernate.ddl-auto: create-drop
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
 
 outbox:

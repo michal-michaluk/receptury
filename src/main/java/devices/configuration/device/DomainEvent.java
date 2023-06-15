@@ -4,10 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import devices.configuration.device.DeviceEventSourcingRepository.LegacyEvents;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DomainEvent.OwnershipUpdated.class, name = "OwnershipUpdated_v2"),
@@ -27,14 +23,5 @@ public interface DomainEvent {
     }
 
     record SettingsUpdated(String deviceId, Settings settings) implements DomainEvent {
-    }
-
-    record DeviceStatuses(String deviceId, List<String> statuses) {
-
-        <T> List<T> map(Function<String, T> mapper) {
-            return statuses().stream()
-                    .map(mapper)
-                    .collect(Collectors.toList());
-        }
     }
 }

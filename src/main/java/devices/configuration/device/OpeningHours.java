@@ -1,27 +1,26 @@
 package devices.configuration.device;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import lombok.Value;
 
 import java.time.LocalTime;
+import java.util.List;
 
-import static devices.configuration.device.OpeningHours.OpeningTime.open24h;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
-@Value
-class OpeningHours {
-    private final static OpeningHours ALWAYS_OPEN = new OpeningHours(true,
-            new Week(open24h(), open24h(), open24h(), open24h(), open24h(), open24h(), open24h())
-    );
+record OpeningHours(
+        boolean alwaysOpen,
+        @JsonInclude(NON_NULL) Week opened) {
 
-    boolean alwaysOpen;
-    Week opened;
+    private final static OpeningHours ALWAYS_OPEN = new OpeningHours(true, null);
 
-    static OpeningHours alwaysOpen() {
+    public static OpeningHours alwaysOpened() {
         return ALWAYS_OPEN;
     }
 
-    static OpeningHours openAt(
+    public static OpeningHours openAt(
             OpeningTime monday,
             OpeningTime tuesday,
             OpeningTime wednesday,
@@ -34,40 +33,47 @@ class OpeningHours {
         );
     }
 
-    static OpeningHours alwaysOpenOrGiven(OpeningHours opening) {
-        return opening == null ? OpeningHours.alwaysOpen() : opening;
+    record Week(
+            OpeningTime monday,
+            OpeningTime tuesday,
+            OpeningTime wednesday,
+            OpeningTime thursday,
+            OpeningTime friday,
+            OpeningTime saturday,
+            OpeningTime sunday) {
     }
 
-    @Value
-    static class Week {
-        OpeningTime monday;
-        OpeningTime tuesday;
-        OpeningTime wednesday;
-        OpeningTime thursday;
-        OpeningTime friday;
-        OpeningTime saturday;
-        OpeningTime sunday;
-    }
-
-    @Value
-    static class OpeningTime {
-        boolean open24h;
-        boolean closed;
-        @JsonSerialize(using = LocalTimeSerializer.class)
-        LocalTime open;
-        @JsonSerialize(using = LocalTimeSerializer.class)
-        LocalTime close;
-
-        static OpeningTime closed() {
-            return new OpeningTime(false, true, null, null);
+    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+    sealed interface OpeningTime {
+        record Opened24h() implements OpeningTime {
         }
 
-        static OpeningTime open24h() {
-            return new OpeningTime(true, false, null, null);
+        record Closed24h() implements OpeningTime {
+        }
+
+        record OpenTime(List<TimeSpan> time) implements OpeningTime {
+        }
+
+        record TimeSpan(
+                @JsonSerialize(using = LocalTimeSerializer.class)
+                LocalTime open,
+                @JsonSerialize(using = LocalTimeSerializer.class)
+                LocalTime close) {
+        }
+
+        static OpeningTime closed24h() {
+            return new Opened24h();
+        }
+
+        static OpeningTime opened24h() {
+            return new Closed24h();
         }
 
         static OpeningTime opened(int open, int close) {
-            return new OpeningTime(false, false, LocalTime.of(open, 0), LocalTime.of(close, 0));
+            return new OpenTime(List.of(new TimeSpan(
+                    LocalTime.of(open, 0),
+                    LocalTime.of(close, 0)
+            )));
         }
     }
 }

@@ -1,5 +1,7 @@
 package devices.configuration.device;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record Ownership(String operator, String provider) {
 
     public static Ownership unowned() {
@@ -14,10 +16,12 @@ public record Ownership(String operator, String provider) {
         assert isUnowned() || isOwned();
     }
 
+    @JsonIgnore
     public boolean isUnowned() {
         return operator == null && provider == null;
     }
 
+    @JsonIgnore
     public boolean isOwned() {
         return operator != null && provider != null;
     }

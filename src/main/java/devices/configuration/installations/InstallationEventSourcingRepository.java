@@ -1,6 +1,5 @@
 package devices.configuration.installations;
 
-import devices.configuration.installations.DomainEvent.InstallationCompleted;
 import devices.configuration.tools.EventTypes;
 import devices.configuration.tools.LegacyDomainEvent;
 import lombok.AllArgsConstructor;
@@ -20,6 +19,7 @@ import javax.persistence.Table;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -32,26 +32,26 @@ class InstallationEventSourcingRepository implements InstallationRepository {
 
     @Override
     public InstallationProcess getByOrderId(String orderId) {
-        List<InstallationEventEntity> history = repository.findByOrderId(orderId);
-        Collections.reverse(history);
-        return recreateObject(history);
+        return recreateObject(repository.findByOrderId(orderId));
     }
 
     @Override
-    public InstallationProcess getByDeviceId(String deviceId) {
-        return recreateObject(repository.findByDeviceId(deviceId));
+    public Optional<InstallationProcess> getByDeviceId(String deviceId) {
+        List<InstallationEventEntity> history = repository.findByDeviceId(deviceId);
+        if (history.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(recreateObject(history));
     }
 
     private InstallationProcess recreateObject(List<InstallationEventEntity> data) {
+        Collections.reverse(data);
         List<DomainEvent> history = data.stream()
                 .map(InstallationEventEntity::getEvent)
                 .map(LegacyDomainEvent::normalise)
                 .toList();
         if (history.isEmpty()) {
             throw new IllegalStateException("process never started");
-        }
-        if (history.stream().anyMatch(event -> event instanceof InstallationCompleted)) {
-            throw new IllegalStateException("process already finished");
         }
         return InstallationProcess.fromHistory(history);
     }

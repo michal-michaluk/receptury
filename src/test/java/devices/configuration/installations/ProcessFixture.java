@@ -1,7 +1,7 @@
 package devices.configuration.installations;
 
 import devices.configuration.device.DeviceFixture;
-import devices.configuration.protocols.BootNotificationFixture;
+import devices.configuration.protocols.CommunicationFixture;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +38,7 @@ public class ProcessFixture {
     @NotNull
     public InstallationProcess almostCompleted() {
         InstallationProcess process = withDeviceAssigned();
-        process.handleBootNotification(BootNotificationFixture.boot(deviceId));
+        process.handleBootNotification(CommunicationFixture.boot(deviceId));
         process.confirmBootData();
         process.assignLocation(DeviceFixture.location());
         return process;

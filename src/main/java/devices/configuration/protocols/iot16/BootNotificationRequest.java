@@ -1,8 +1,8 @@
 package devices.configuration.protocols.iot16;
 
-import devices.configuration.intervals.DeviceInfo;
-import devices.configuration.intervals.Protocols;
 import devices.configuration.protocols.BootNotification;
+
+import static devices.configuration.protocols.BootNotification.Protocols.IoT16;
 
 record BootNotificationRequest(
         String chargePointVendor,
@@ -15,18 +15,9 @@ record BootNotificationRequest(
         String meterType,
         String meterSerialNumber) {
 
-    DeviceInfo toDevice(String deviceId) {
-        return new DeviceInfo(
-                deviceId,
-                chargePointVendor,
-                chargePointModel,
-                Protocols.IoT16
-        );
-    }
-
     BootNotification toBootNotificationEvent(String deviceId) {
         return new BootNotification(
-                deviceId,
+                deviceId, IoT16,
                 chargePointVendor, chargePointModel,
                 chargeBoxSerialNumber, firmwareVersion
         );
