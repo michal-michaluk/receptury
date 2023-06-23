@@ -2,6 +2,7 @@ package devices.configuration.search;
 
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.Ownership;
+import devices.configuration.protocols.BootNotification;
 import devices.configuration.protocols.DeviceStatuses;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,6 +45,16 @@ class ReadModelsProjection {
     }
 
     @EventListener
+    public void handle(BootNotification boot) {
+        DeviceReadsEntity entity = repository.findById(boot.deviceId())
+                .orElseGet(() -> new DeviceReadsEntity(boot.deviceId()));
+
+        entity.setBoot(boot);
+
+        repository.save(entity);
+    }
+
+    @EventListener
     public void handle(DeviceStatuses statuses) {
         DeviceReadsEntity entity = repository.findById(statuses.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(statuses.deviceId()));
@@ -57,9 +68,9 @@ class ReadModelsProjection {
     }
 
     @Transactional(readOnly = true)
-    public Optional<DeviceConfiguration> findById(String deviceId) {
+    public Optional<DeviceDetails> findById(String deviceId) {
         return repository.findById(deviceId)
-                .map(DeviceReadsEntity::getDetails);
+                .map(entity -> new DeviceDetails(entity.details, entity.boot));
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +123,9 @@ class ReadModelsProjection {
         @Type(type = "jsonb")
         @Column(columnDefinition = "jsonb")
         private DeviceStatuses statuses;
+        @Type(type = "jsonb")
+        @Column(columnDefinition = "jsonb")
+        private BootNotification boot;
 
         DeviceReadsEntity(String deviceId) {
             this.deviceId = deviceId;

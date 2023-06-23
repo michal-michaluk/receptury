@@ -1,6 +1,5 @@
 package devices.configuration.search;
 
-import devices.configuration.device.DeviceConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +32,7 @@ class DeviceReadsController {
 
     @GetMapping(path = "/devices/{deviceId}",
             produces = APPLICATION_JSON_VALUE)
-    Optional<DeviceConfiguration> getConfiguration(@PathVariable String deviceId) {
+    Optional<DeviceDetails> getDetails(@PathVariable String deviceId) {
         return reads.findById(deviceId);
     }
 }

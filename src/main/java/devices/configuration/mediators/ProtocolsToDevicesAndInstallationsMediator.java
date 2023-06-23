@@ -4,13 +4,13 @@ import devices.configuration.device.DeviceService;
 import devices.configuration.installations.InstallationService;
 import devices.configuration.protocols.KnownDevices;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Component
 @Transactional
 @AllArgsConstructor
-class KnownDevicesMediator implements KnownDevices {
+class ProtocolsToDevicesAndInstallationsMediator implements KnownDevices {
     private final DeviceService devices;
     private final InstallationService installations;
 

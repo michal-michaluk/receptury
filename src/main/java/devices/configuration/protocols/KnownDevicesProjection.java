@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Entity;
@@ -19,7 +19,7 @@ import javax.persistence.Table;
 import static javax.persistence.EnumType.STRING;
 
 @Primary
-@Service
+@Component
 @Transactional
 @AllArgsConstructor
 class KnownDevicesProjection implements KnownDevices {

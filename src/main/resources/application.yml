@@ -25,6 +25,7 @@ logging.level:
   org.apache.kafka.clients.admin.AdminClientConfig: INFO
   org.apache.kafka.common.utils.AppInfoParser: INFO
   org.apache.kafka.streams.StreamsConfig: INFO
+  com.tngtech.archunit.*: OFF
 
 spring:
   datasource:

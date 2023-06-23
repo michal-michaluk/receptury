@@ -11,53 +11,53 @@ class IntervalRulesTest {
     void matchInFirstDeviceIdRule() {
         var boot = IntervalRulesFixture.matchingDeviceIdRule1();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(600);
+        Assertions.assertThat(interval).hasSeconds(600);
     }
 
     @Test
     void matchInSecondDeviceIdRule() {
         var boot = IntervalRulesFixture.matchingDeviceIdRule2();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(2700);
+        Assertions.assertThat(interval).hasSeconds(2700);
     }
 
     @Test
     void matchInStrictModelRule() {
         var boot = IntervalRulesFixture.matchingStrictModelRule();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(60);
+        Assertions.assertThat(interval).hasSeconds(60);
     }
 
     @Test
     void matchInRegexpFirmwareRule() {
         var boot = IntervalRulesFixture.matchingRegexFirmwareRule();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(10);
+        Assertions.assertThat(interval).hasSeconds(10);
     }
 
     @Test
     void matchInRegexpModelRule() {
         var boot = IntervalRulesFixture.matchingRegexModelRule();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(120);
+        Assertions.assertThat(interval).hasSeconds(120);
     }
 
     @Test
     void returnDefaultInterval() {
         var boot = IntervalRulesFixture.notMatchingAnyRule();
 
-        int interval = rules.calculateInterval(boot);
+        var interval = rules.calculateInterval(boot);
 
-        Assertions.assertThat(interval).isEqualTo(1800);
+        Assertions.assertThat(interval).hasSeconds(1800);
     }
 }

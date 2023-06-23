@@ -4,6 +4,7 @@ import devices.configuration.IntegrationTest;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.DeviceFixture;
 import devices.configuration.protocols.CommunicationFixture;
+import devices.configuration.tools.JsonConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,9 @@ class ReadModelsProjectionTest {
     void findById() {
         givenDevice();
 
-        Optional<DeviceConfiguration> read = projection.findById(deviceId);
+        Optional<DeviceDetails> read = projection.findById(deviceId);
 
+        System.out.println(JsonConfiguration.OBJECT_MAPPER.valueToTree(read));
         assertThat(read).isExactlyLike("""
                 {
                   "deviceId": "fixed-device-id",
@@ -78,6 +80,14 @@ class ReadModelsProjectionTest {
                   "visibility": {
                     "roamingEnabled": true,
                     "forCustomer": "USABLE_BUT_HIDDEN_ON_MAP"
+                  } ,
+                  "boot": {
+                    "deviceId": "fixed-device-id",
+                    "protocol": "IoT16",
+                    "vendor": "Garo",
+                    "model": "CPF25 Family",
+                    "serial": "820394A93203",
+                    "firmware": "1.1"
                   }
                 }
                 """);
@@ -173,6 +183,7 @@ class ReadModelsProjectionTest {
         DeviceConfiguration device = DeviceFixture.givenDeviceConfiguration(deviceId);
 
         projection.handle(device);
+        projection.handle(CommunicationFixture.boot(deviceId));
         projection.handle(CommunicationFixture.statuses(deviceId));
         return device;
     }

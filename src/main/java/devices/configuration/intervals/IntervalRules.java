@@ -2,6 +2,7 @@ package devices.configuration.intervals;
 
 import devices.configuration.protocols.BootNotification;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -27,13 +28,13 @@ record IntervalRules(
         return new ModelRule(seconds, vendor, model, firmware);
     }
 
-    int calculateInterval(BootNotification boot) {
-        return Stream.of(byIds, byModel)
+    Duration calculateInterval(BootNotification boot) {
+        return Duration.ofSeconds(Stream.of(byIds, byModel)
                 .flatMap(Collection::stream)
                 .filter(rule -> rule.matches(boot))
                 .findFirst()
                 .map(Rule::seconds)
-                .orElse(defSeconds);
+                .orElse(defSeconds));
     }
 
     interface Rule {

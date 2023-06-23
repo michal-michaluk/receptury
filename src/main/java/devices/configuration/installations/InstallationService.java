@@ -1,8 +1,6 @@
 package devices.configuration.installations;
 
-import devices.configuration.device.DeviceService;
 import devices.configuration.device.Location;
-import devices.configuration.device.UpdateDevice;
 import devices.configuration.protocols.BootNotification;
 import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -15,7 +13,7 @@ import java.util.Optional;
 public class InstallationService {
 
     private final InstallationRepository repository;
-    private final DeviceService devices;
+    private final Devices devices;
 
     @EventListener
     public void handleWorkOrder(WorkOrder order) {
@@ -54,8 +52,10 @@ public class InstallationService {
         InstallationProcess process = repository.getByOrderId(orderId);
         CompletionResult finalization = process.complete();
         if (finalization.isConfirmed()) {
-            devices.createNewDevice(process.deviceId, UpdateDevice.use(
-                    finalization.ownership(), finalization.location())
+            devices.create(
+                    process.deviceId,
+                    finalization.ownership(),
+                    finalization.location()
             );
         }
         return finalization;

@@ -1,7 +1,6 @@
 package devices.configuration.protocols;
 
 
-import devices.configuration.intervals.IntervalsService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -17,14 +16,14 @@ import java.util.function.Function;
 @AllArgsConstructor
 public class CommunicationService {
     private final Clock clock;
-    private final IntervalsService intervals;
+    private final HeartbeatInterval intervals;
     private final KnownDevices devices;
     private final ApplicationEventPublisher publisher;
 
     public BootResponse handleBoot(BootNotification boot) {
         BootResponse response = new BootResponse(
                 Instant.now(clock),
-                Duration.ofSeconds(intervals.calculateInterval(boot)),
+                intervals.heartbeatIntervalFor(boot),
                 devices.get(boot.deviceId())
         );
         publisher.publishEvent(boot);
