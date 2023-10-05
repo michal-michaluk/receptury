@@ -72,8 +72,8 @@ class Device {
 
     private Violations checkViolations() {
         return Violations.builder()
-                .operatorNotAssigned(ownership == null || ownership.operator() == null)
-                .providerNotAssigned(ownership == null || ownership.provider() == null)
+                .operatorNotAssigned(ownership.operator() == null)
+                .providerNotAssigned(ownership.provider() == null)
                 .locationMissing(location == null)
                 .showOnMapButMissingLocation(settings.isShowOnMap() && location == null)
                 .showOnMapButNoPublicAccess(settings.isShowOnMap() && !settings.isPublicAccess())
