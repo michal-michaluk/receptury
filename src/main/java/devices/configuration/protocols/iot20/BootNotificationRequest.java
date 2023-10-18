@@ -1,11 +1,21 @@
 package devices.configuration.protocols.iot20;
 
+import devices.configuration.intervals.DeviceInfo;
 import lombok.Value;
 
 @Value
 class BootNotificationRequest {
     Device device;
     Reason reason;
+
+    public DeviceInfo toDeviceInfo(String deviceId) {
+        return new DeviceInfo(
+                deviceId,
+                device.getVendorName(),
+                device.getModel(),
+                device.getFirmwareVersion()
+        );
+    }
 
     @Value
     static class Device {

@@ -1,5 +1,6 @@
 package devices.configuration.protocols.iot16;
 
+import devices.configuration.intervals.DeviceInfo;
 import lombok.Value;
 
 @Value
@@ -13,4 +14,13 @@ class BootNotificationRequest {
     String imsi;
     String meterType;
     String meterSerialNumber;
+
+    public DeviceInfo toDeviceInfo(String deviceId) {
+        return new DeviceInfo(
+                deviceId,
+                chargePointVendor,
+                chargePointModel,
+                firmwareVersion
+        );
+    }
 }

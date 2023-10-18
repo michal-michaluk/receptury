@@ -1,0 +1,31 @@
+{
+  "deviceIdRules": [
+    {
+      "interval": 600,
+      "deviceIds": [
+        "EVB-P4562137",
+        "ALF-9571445"
+      ]
+    },
+    {
+      "interval": 2700,
+      "deviceIds": [
+        "t53_8264_019",
+        "EVB-P15079256"
+      ]
+    }
+  ],
+  "modelRules": [
+    {
+      "interval": 120,
+      "vendor": "ChargeStorm AB",
+      "model": "Chargestorm Connected"
+    },
+    {
+      "interval": 60,
+      "vendor": "Alfen BV",
+      "model": "NG920-5250[6-9]"
+    }
+  ],
+  "defaultInterval": 1800
+}
