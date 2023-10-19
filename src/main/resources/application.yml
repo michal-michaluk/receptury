@@ -1,8 +1,20 @@
-spring.application.name: devices-configuration
+spring:
+  application.name: devices-configuration
+  datasource:
+    driverClassName: org.postgresql.Driver
+    hikari:
+      maximumPoolSize: 15
+  jpa:
+    hibernate.ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  kafka.consumer:
+    group-id: devices-configuration-default
+    auto-offset-reset: earliest
 
-spring.kafka.consumer:
-  group-id: devices-configuration-default
-  auto-offset-reset: earliest
+server:
+  shutdown: graceful
+  error:
+    include-message: never
 
 management:
   metrics.export.prometheus.enabled: true
@@ -26,17 +38,3 @@ logging.level:
   org.apache.kafka.common.utils.AppInfoParser: INFO
   org.apache.kafka.streams.StreamsConfig: INFO
   com.tngtech.archunit.*: OFF
-
-spring:
-  datasource:
-    driverClassName: org.postgresql.Driver
-    hikari:
-      maximumPoolSize: 15
-  jpa:
-    hibernate.ddl-auto: update
-    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
-
-server:
-  shutdown: graceful
-  error:
-    include-message: always

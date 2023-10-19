@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @IntegrationTest
 @Transactional
 @RecordApplicationEvents
-class DeviceDocumentRepositoryTest {
+class DeviceDocumentWithHistoryRepositoryTest {
 
     @Autowired
-    DeviceDocumentRepository repository;
+    DeviceDocumentWithHistoryRepository repository;
 
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

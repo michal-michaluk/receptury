@@ -20,7 +20,7 @@ import java.util.UUID;
 @Primary
 @Repository
 @AllArgsConstructor
-class DeviceDocumentRepository implements DeviceRepository {
+class DeviceDocumentWithHistoryRepository implements DeviceRepository {
 
     private final DocumentRepository documents;
     private final EventRepository events;
