@@ -5,19 +5,19 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class IntervalRules {
+class IntervalRules {
 
     private final List<DeviceIdRule> deviceIdRules;
     private final List<ModelRule> modelRules;
     private final int defaultInterval;
 
-    public IntervalRules(List<DeviceIdRule> deviceIdRules, List<ModelRule> modelRules, int defaultInterval) {
+    IntervalRules(List<DeviceIdRule> deviceIdRules, List<ModelRule> modelRules, int defaultInterval) {
         this.deviceIdRules = deviceIdRules;
         this.modelRules = modelRules;
         this.defaultInterval = defaultInterval;
     }
 
-    public Duration calculateInterval(DeviceInfo device) {
+    Duration calculateInterval(DeviceInfo device) {
         return Stream.of(deviceIdRules, modelRules)
                 .flatMap(List::stream)
                 .filter(rule -> rule.matches(device))
@@ -39,10 +39,16 @@ public class IntervalRules {
         }
     }
 
-    record ModelRule(int interval, String vendor, Pattern model) implements Rule {
+    record ModelRule(int interval, String vendor, Pattern model, Pattern firmware) implements Rule {
+        ModelRule(int interval, String vendor, Pattern model) {
+            this(interval, vendor, model, null);
+        }
+
         @Override
         public boolean matches(DeviceInfo device) {
-            return vendor.equals(device.vendor()) && model.matcher(device.model()).matches();
+            return vendor.equals(device.vendor())
+                   && model.matcher(device.model()).matches()
+                   && (firmware == null || firmware.matcher(device.firmware()).matches());
         }
     }
 

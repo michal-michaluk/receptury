@@ -51,6 +51,18 @@ public class IntervalRulesTest {
     }
 
     @Test
+    void matchRuleByFirmwareRegexp() {
+        DeviceInfo device = IntervalRulesFixture.exampleDevice()
+                .vendor("Alfen BV")
+                .model("NG920-52507")
+                .firmware("1.1.666")
+                .build();
+        Duration interval = rules.calculateInterval(device);
+
+        Assertions.assertThat(interval).hasSeconds(10);
+    }
+
+    @Test
     void notMatchAnyRule() {
         DeviceInfo device = IntervalRulesFixture.exampleDevice()
                 .build();

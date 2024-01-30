@@ -18,8 +18,9 @@ public class IntervalRulesJsonCompatibilityTest {
                     { "interval": 2700, "deviceIds": [ "t53_8264_019", "EVB-P15079256" ] }
                   ],
                   "modelRules": [
-                    { "interval": 120, "vendor": "ChargeStorm AB", "model": "Chargestorm Connected" },
-                    { "interval": 60, "vendor": "Alfen BV", "model": "NG920-5250[6-9]" }
+                    { "interval": 120, "vendor": "ChargeStorm AB", "model": "Chargestorm Connected", "firmware": null },
+                    { "interval": 60, "vendor": "Alfen BV", "model": "NG920-5250[6-9]", "firmware": null },
+                    { "interval": 10, "vendor": "Alfen BV", "model": "NG920-5250[6-9]", "firmware": "1.1.666" }
                   ],
                   "defaultInterval": 1800
                 }

@@ -16,6 +16,7 @@ public class IntervalRulesFixture {
                 ),
                 List.of(
                         new IntervalRules.ModelRule(120, "ChargeStorm AB", Pattern.compile("Chargestorm Connected")),
+                        new IntervalRules.ModelRule(10, "Alfen BV", Pattern.compile("NG920-5250[6-9]"), Pattern.compile("1.1.666")),
                         new IntervalRules.ModelRule(60, "Alfen BV", Pattern.compile("NG920-5250[6-9]"))
                 ),
                 1800);
