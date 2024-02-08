@@ -1,6 +1,6 @@
 package devices.configuration.intervals;
 
-import devices.configuration.protocols.BootNotification;
+import devices.configuration.communication.BootNotification;
 
 import java.time.Duration;
 import java.util.*;

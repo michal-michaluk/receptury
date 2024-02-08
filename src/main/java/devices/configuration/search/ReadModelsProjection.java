@@ -1,9 +1,9 @@
 package devices.configuration.search;
 
+import devices.configuration.communication.BootNotification;
+import devices.configuration.communication.DeviceStatuses;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.Ownership;
-import devices.configuration.protocols.BootNotification;
-import devices.configuration.protocols.DeviceStatuses;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -19,7 +19,7 @@ class DeviceServiceTest {
     @Test
     void getDeviceConfiguration() {
         String deviceId = givenDevice();
-        Optional<DeviceConfiguration> configuration = service.get(deviceId);
+        Optional<DeviceConfiguration> configuration = service.getDevice(deviceId);
 
         assertThat(configuration)
                 .hasOwnership(ownership())
@@ -32,7 +32,7 @@ class DeviceServiceTest {
 
     @Test
     void getUnknownDeviceConfiguration() {
-        Optional<DeviceConfiguration> configuration = service.get("fake-device-id");
+        Optional<DeviceConfiguration> configuration = service.getDevice("fake-device-id");
 
         Assertions.assertThat(configuration).isEmpty();
     }
@@ -76,7 +76,7 @@ class DeviceServiceTest {
     void update() {
         String existingDeviceId = givenDevice();
 
-        Optional<DeviceConfiguration> configuration = service.update(
+        Optional<DeviceConfiguration> configuration = service.updateDevice(
                 existingDeviceId,
                 builder()
                         .openingHours(closedAtWeekend())

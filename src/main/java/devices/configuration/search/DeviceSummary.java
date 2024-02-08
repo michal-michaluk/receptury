@@ -1,8 +1,8 @@
 package devices.configuration.search;
 
+import devices.configuration.communication.DeviceStatuses;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.Location;
-import devices.configuration.protocols.DeviceStatuses;
 
 import java.util.List;
 import java.util.Optional;

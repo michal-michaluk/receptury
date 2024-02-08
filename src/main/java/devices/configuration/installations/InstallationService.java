@@ -1,7 +1,7 @@
 package devices.configuration.installations;
 
+import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
-import devices.configuration.protocols.BootNotification;
 import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;

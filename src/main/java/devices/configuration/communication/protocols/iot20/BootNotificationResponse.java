@@ -1,4 +1,4 @@
-package devices.configuration.protocols.iot16;
+package devices.configuration.communication.protocols.iot20;
 
 import lombok.Builder;
 

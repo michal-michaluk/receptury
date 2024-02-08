@@ -7,9 +7,9 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import devices.configuration.ArchitectureDescription;
+import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
-import devices.configuration.protocols.BootNotification;
 
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 

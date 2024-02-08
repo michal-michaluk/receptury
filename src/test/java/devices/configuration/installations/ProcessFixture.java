@@ -1,7 +1,7 @@
 package devices.configuration.installations;
 
+import devices.configuration.communication.CommunicationFixture;
 import devices.configuration.device.DeviceFixture;
-import devices.configuration.protocols.CommunicationFixture;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 

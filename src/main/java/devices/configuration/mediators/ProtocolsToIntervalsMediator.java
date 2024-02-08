@@ -1,8 +1,8 @@
 package devices.configuration.mediators;
 
+import devices.configuration.communication.BootNotification;
+import devices.configuration.communication.HeartbeatInterval;
 import devices.configuration.intervals.IntervalsService;
-import devices.configuration.protocols.BootNotification;
-import devices.configuration.protocols.HeartbeatInterval;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

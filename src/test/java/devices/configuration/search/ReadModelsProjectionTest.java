@@ -1,9 +1,9 @@
 package devices.configuration.search;
 
 import devices.configuration.IntegrationTest;
+import devices.configuration.communication.CommunicationFixture;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.DeviceFixture;
-import devices.configuration.protocols.CommunicationFixture;
 import devices.configuration.tools.JsonConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

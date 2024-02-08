@@ -1,6 +1,6 @@
-package devices.configuration.protocols.iot20;
+package devices.configuration.communication.protocols.iot20;
 
-import devices.configuration.protocols.BootNotification;
+import devices.configuration.communication.BootNotification;
 
 record BootNotificationRequest(
         Device device,

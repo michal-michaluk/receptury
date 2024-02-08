@@ -1,8 +1,8 @@
-package devices.configuration.protocols.iot16;
+package devices.configuration.communication.protocols.iot16;
 
-import devices.configuration.protocols.BootNotification;
+import devices.configuration.communication.BootNotification;
 
-import static devices.configuration.protocols.BootNotification.Protocols.IoT16;
+import static devices.configuration.communication.BootNotification.Protocols.IoT16;
 
 record BootNotificationRequest(
         String chargePointVendor,

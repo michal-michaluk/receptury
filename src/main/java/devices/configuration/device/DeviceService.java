@@ -14,7 +14,7 @@ public class DeviceService {
     private final DeviceRepository repository;
 
     @Transactional(readOnly = true)
-    public Optional<DeviceConfiguration> get(String deviceId) {
+    public Optional<DeviceConfiguration> getDevice(String deviceId) {
         return repository.get(deviceId)
                 .map(Device::toDeviceConfiguration);
     }
@@ -26,7 +26,7 @@ public class DeviceService {
         return device.toDeviceConfiguration();
     }
 
-    public Optional<DeviceConfiguration> update(String deviceId, UpdateDevice update) {
+    public Optional<DeviceConfiguration> updateDevice(String deviceId, UpdateDevice update) {
         return repository.get(deviceId)
                 .map(device -> {
                     update.apply(device);

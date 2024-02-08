@@ -1,8 +1,8 @@
 package devices.configuration.mediators;
 
+import devices.configuration.communication.KnownDevices;
 import devices.configuration.device.DeviceService;
 import devices.configuration.installations.InstallationService;
-import devices.configuration.protocols.KnownDevices;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ class ProtocolsToDevicesAndInstallationsMediator implements KnownDevices {
 
     @Override
     public State get(String deviceId) {
-        if (devices.get(deviceId).isPresent()) {
+        if (devices.getDevice(deviceId).isPresent()) {
             return State.EXISTING;
         }
         if (installations.getByDeviceId(deviceId).isPresent()) {

@@ -1,9 +1,9 @@
 package devices.configuration.installations;
 
+import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 import devices.configuration.installations.InstallationProcessState.State;
-import devices.configuration.protocols.BootNotification;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 

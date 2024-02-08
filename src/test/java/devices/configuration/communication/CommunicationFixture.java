@@ -1,10 +1,10 @@
-package devices.configuration.protocols;
+package devices.configuration.communication;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static devices.configuration.protocols.BootNotification.Protocols.IoT16;
+import static devices.configuration.communication.BootNotification.Protocols.IoT16;
 
 public class CommunicationFixture {
 

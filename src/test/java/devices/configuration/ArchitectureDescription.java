@@ -3,7 +3,6 @@ package devices.configuration;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.lang.syntax.elements.ClassesShouldConjunction;
-import devices.configuration.tools.LegacyDomainEvent;
 
 import java.util.Arrays;
 
@@ -21,8 +20,7 @@ public class ArchitectureDescription {
             simpleNameEndingWith("Entity"),
             simpleNameEndingWith("Integration"),
             simpleNameEndingWith("Listener"),
-            simpleNameEndingWith("Client"),
-            assignableTo(LegacyDomainEvent.class)
+            simpleNameEndingWith("Client")
     );
 
     public static final DescribedPredicate<JavaClass> services = simpleNameEndingWith("Service");
@@ -61,10 +59,12 @@ public class ArchitectureDescription {
     public static ClassesShouldConjunction modelDependencies(String aPackage, DescribedPredicate<JavaClass> sharedKernelUsed) {
         return classes()
                 .that(model).and().resideInAPackage(aPackage)
+                .and().areTopLevelClasses()
                 .should()
                 .onlyDependOnClassesThat(or(
+                        model,
                         sharedKernelUsed,
-                        resideInAnyPackage(aPackage, "java..", "lombok.."),
+                        resideInAnyPackage("java..", "lombok.."),
                         resideInAnyPackage("javax.validation.."),
                         resideInAnyPackage("com.fasterxml.jackson..")
                 ));

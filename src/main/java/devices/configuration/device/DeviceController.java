@@ -23,7 +23,7 @@ class DeviceController {
             produces = APPLICATION_JSON_VALUE)
     DeviceConfiguration patchStation(@PathVariable String deviceId,
                                      @RequestBody @Valid UpdateDevice update) {
-        return service.update(deviceId, update)
+        return service.updateDevice(deviceId, update)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

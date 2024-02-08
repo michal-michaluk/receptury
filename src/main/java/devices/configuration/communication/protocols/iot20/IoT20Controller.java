@@ -1,21 +1,21 @@
-package devices.configuration.protocols.iot16;
+package devices.configuration.communication.protocols.iot20;
 
-import devices.configuration.protocols.CommunicationService;
+import devices.configuration.communication.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static devices.configuration.protocols.iot16.BootNotificationResponse.Status.*;
+import static devices.configuration.communication.protocols.iot20.BootNotificationResponse.Status.*;
 
 @RestController
 @RequiredArgsConstructor
-class IoT16Controller {
+class IoT20Controller {
 
     private final CommunicationService service;
 
-    @PostMapping(path = "/protocols/iot16/bootnotification/{deviceId}",
+    @PostMapping(path = "/protocols/iot20/bootnotification/{deviceId}",
             consumes = "application/json", produces = "application/json")
     BootNotificationResponse handleBootNotification(@PathVariable String deviceId,
                                                     @RequestBody BootNotificationRequest request) {
@@ -31,5 +31,4 @@ class IoT16Controller {
                         ).build()
                 );
     }
-
 }

@@ -1,18 +1,18 @@
 package devices.configuration.installations;
 
+import devices.configuration.communication.BootNotification;
 import devices.configuration.device.DeviceFixture;
 import devices.configuration.device.Ownership;
 import devices.configuration.installations.DomainEvent.*;
 import devices.configuration.installations.InstallationProcessState.State;
-import devices.configuration.protocols.BootNotification;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static devices.configuration.communication.CommunicationFixture.boot;
 import static devices.configuration.installations.InstallationProcessAssert.assertThat;
-import static devices.configuration.protocols.CommunicationFixture.boot;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InstallationProcessTest {

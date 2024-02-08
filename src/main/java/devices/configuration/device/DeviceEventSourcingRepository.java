@@ -102,20 +102,4 @@ class DeviceEventSourcingRepository implements DeviceRepository {
             this.event = event;
         }
     }
-
-    public static class LegacyEvents {
-
-        public record OwnershipUpdatedV1(
-                String deviceId,
-                String operator,
-                String provider) implements LegacyDomainEvent {
-            @Override
-            public OwnershipUpdated normalise() {
-                return new OwnershipUpdated(deviceId,
-                        new Ownership(operator, provider)
-                );
-            }
-        }
-
-    }
 }

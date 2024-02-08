@@ -2,8 +2,8 @@ package devices.configuration.installations;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
-import devices.configuration.protocols.BootNotification;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({

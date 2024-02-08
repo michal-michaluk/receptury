@@ -2,7 +2,7 @@ package devices.configuration.device;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import devices.configuration.device.DeviceEventSourcingRepository.LegacyEvents;
+import devices.configuration.tools.LegacyDomainEvent;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
@@ -24,4 +24,21 @@ public interface DomainEvent {
 
     record SettingsUpdated(String deviceId, Settings settings) implements DomainEvent {
     }
+}
+
+@SuppressWarnings("unchecked")
+class LegacyEvents {
+
+    public record OwnershipUpdatedV1(
+            String deviceId,
+            String operator,
+            String provider) implements LegacyDomainEvent {
+        @Override
+        public DomainEvent.OwnershipUpdated normalise() {
+            return new DomainEvent.OwnershipUpdated(deviceId,
+                    new Ownership(operator, provider)
+            );
+        }
+    }
+
 }

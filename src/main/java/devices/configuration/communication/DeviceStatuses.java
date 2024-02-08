@@ -1,4 +1,4 @@
-package devices.configuration.protocols;
+package devices.configuration.communication;
 
 import java.util.List;
 import java.util.function.Function;

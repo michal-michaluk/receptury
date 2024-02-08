@@ -1,7 +1,7 @@
 package devices.configuration.intervals;
 
-import devices.configuration.protocols.BootNotification;
-import devices.configuration.protocols.CommunicationFixture;
+import devices.configuration.communication.BootNotification;
+import devices.configuration.communication.CommunicationFixture;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
