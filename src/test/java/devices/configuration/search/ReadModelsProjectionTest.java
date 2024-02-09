@@ -82,7 +82,6 @@ class ReadModelsProjectionTest {
                     "forCustomer": "USABLE_BUT_HIDDEN_ON_MAP"
                   } ,
                   "boot": {
-                    "deviceId": "fixed-device-id",
                     "protocol": "IoT16",
                     "vendor": "Garo",
                     "model": "CPF25 Family",

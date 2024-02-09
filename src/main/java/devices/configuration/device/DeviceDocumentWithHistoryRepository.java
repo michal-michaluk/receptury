@@ -1,6 +1,7 @@
 package devices.configuration.device;
 
 import devices.configuration.tools.EventTypes;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,12 +28,14 @@ class DeviceDocumentWithHistoryRepository implements DeviceRepository {
     private final ApplicationEventPublisher publisher;
 
     @Override
+    @WithSpan
     public Optional<Device> get(String deviceId) {
         return documents.findById(deviceId)
                 .map(DeviceDocumentEntity::getDevice);
     }
 
     @Override
+    @WithSpan
     public void save(Device device) {
         List<DomainEvent> emitted = eventsEmittedFrom(device);
         documents.save(documents.findById(device.deviceId)

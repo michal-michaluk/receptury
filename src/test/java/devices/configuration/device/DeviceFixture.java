@@ -123,7 +123,7 @@ public class DeviceFixture {
                 OpeningHours.OpeningTime.opened24h(),
                 OpeningHours.OpeningTime.opened24h(),
                 OpeningHours.OpeningTime.opened24h(),
-                OpeningHours.OpeningTime.opened24h(),
+                OpeningHours.OpeningTime.opened(0, 15),
                 OpeningHours.OpeningTime.closed24h(),
                 OpeningHours.OpeningTime.closed24h()
         );

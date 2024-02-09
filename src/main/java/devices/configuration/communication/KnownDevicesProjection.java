@@ -3,6 +3,7 @@ package devices.configuration.communication;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.installations.DomainEvent.DeviceAssigned;
 import devices.configuration.installations.DomainEvent.InstallationCompleted;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -26,6 +27,7 @@ class KnownDevicesProjection implements KnownDevices {
     private final JpaRepository repository;
 
     @Override
+    @WithSpan
     public State get(String deviceId) {
         return repository.findById(deviceId)
                 .map(KnownDeviceEntity::state)
@@ -33,16 +35,19 @@ class KnownDevicesProjection implements KnownDevices {
     }
 
     @EventListener
+    @WithSpan
     public void handleInstallationStart(DeviceAssigned event) {
         put(event.deviceId(), State.IN_INSTALLATION);
     }
 
     @EventListener
+    @WithSpan
     public void handleInstallationFinish(InstallationCompleted event) {
         put(event.deviceId(), State.EXISTING);
     }
 
     @EventListener
+    @WithSpan
     public void handleDeInstallation(DeviceConfiguration event) {
         if (event.ownership().isUnowned()) {
             put(event.deviceId(), State.UNKNOWN);

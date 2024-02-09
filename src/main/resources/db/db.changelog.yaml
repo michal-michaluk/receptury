@@ -1,0 +1,288 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: fee91d65-5b79-40e2-a473-a241dc2be972
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: config
+            columns:
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: configuration
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 6a47fffc-a97f-4e6a-b37d-22945a26d39a
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: device_document
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: device
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 29dfd3d3-47e1-4afa-b80d-74f6727544fc
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: device_events
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time
+                  type: timestamp without time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: d40becfb-88f7-4ffe-b7d8-b5fc590f26b1
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: search
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: operator
+                  type: varchar(255)
+              - column:
+                  name: provider
+                  type: varchar(255)
+              - column:
+                  name: pin
+                  type: jsonb
+              - column:
+                  name: summary
+                  type: jsonb
+              - column:
+                  name: details
+                  type: jsonb
+              - column:
+                  name: statuses
+                  type: jsonb
+              - column:
+                  name: boot
+                  type: jsonb
+
+  - changeSet:
+      id: ee6b1a0f-c4f7-4df1-8d23-2f5fdda66ef3
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: installation_events
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: varchar(255)
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time
+                  type: timestamp without time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 847e1118-1e1f-45ed-86b4-478bc3b22af0
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: known_device
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: state
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      comment: relevant only for demonstration of DeviceNormalizingRepository
+      id: c723eaaa-8f6c-465f-b2ee-cc3881242a6a
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: normalized_device
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: operator
+                  type: varchar(255)
+              - column:
+                  name: provider
+                  type: varchar(255)
+              - column:
+                  name: street
+                  type: varchar(255)
+              - column:
+                  name: house_number
+                  type: varchar(255)
+              - column:
+                  name: city
+                  type: varchar(255)
+              - column:
+                  name: postal_code
+                  type: varchar(255)
+              - column:
+                  name: state
+                  type: varchar(255)
+              - column:
+                  name: country
+                  type: varchar(255)
+              - column:
+                  name: longitude
+                  type: numeric(18, 15)
+              - column:
+                  name: latitude
+                  type: numeric(18, 15)
+              - column:
+                  name: auto_start
+                  type: boolean
+              - column:
+                  name: remote_control
+                  type: boolean
+              - column:
+                  name: billing
+                  type: boolean
+              - column:
+                  name: reimbursement
+                  type: boolean
+              - column:
+                  name: show_on_map
+                  type: boolean
+              - column:
+                  name: public_access
+                  type: boolean
+        - createTable:
+            tableName: normalized_opening
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_normalized_device
+                    references: normalized_device(device_id)
+              - column:
+                  name: day_of_week
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: open24h
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: closed
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: open
+                  type: smallint
+              - column:
+                  name: close
+                  type: smallint

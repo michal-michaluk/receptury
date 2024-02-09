@@ -2,6 +2,7 @@ package devices.configuration.intervals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import devices.configuration.tools.FeatureConfiguration;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,14 @@ class IntervalRulesDocumentRepository implements IntervalRulesRepository {
     private final FeatureConfiguration repository;
 
     @Override
+    @WithSpan
     public IntervalRules get() {
         return repository.get(CONFIG_NAME)
                 .as(IntervalRules.class)
                 .orElse(IntervalRules.defaultRules());
     }
 
+    @WithSpan
     public JsonNode save(IntervalRules configuration) {
         return repository.save(CONFIG_NAME, configuration)
                 .raw();

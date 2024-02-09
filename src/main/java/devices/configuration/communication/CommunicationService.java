@@ -1,6 +1,7 @@
 package devices.configuration.communication;
 
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class CommunicationService {
     private final KnownDevices devices;
     private final ApplicationEventPublisher publisher;
 
+    @WithSpan
     public BootResponse handleBoot(BootNotification boot) {
         BootResponse response = new BootResponse(
                 Instant.now(clock),

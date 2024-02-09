@@ -59,7 +59,7 @@ public class FeatureConfiguration {
     }
 
     @Entity
-    @Table(name = "features_configuration")
+    @Table(name = "config")
     static class ConfigurationEntity {
         @Id
         private String name;

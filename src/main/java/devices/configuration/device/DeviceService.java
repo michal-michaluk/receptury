@@ -21,6 +21,7 @@ public class DeviceService {
                 .map(Device::toDeviceConfiguration);
     }
 
+    @WithSpan
     public DeviceConfiguration createNewDevice(String deviceId, UpdateDevice update) {
         Device device = Device.newDevice(deviceId);
         update.apply(device);
@@ -28,6 +29,7 @@ public class DeviceService {
         return device.toDeviceConfiguration();
     }
 
+    @WithSpan
     public Optional<DeviceConfiguration> updateDevice(String deviceId, UpdateDevice update) {
         return repository.get(deviceId)
                 .map(device -> {

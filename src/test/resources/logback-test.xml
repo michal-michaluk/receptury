@@ -5,7 +5,7 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <root level="WARN"/>
+    <logger name="liquibase" level="off"/>
 </configuration>

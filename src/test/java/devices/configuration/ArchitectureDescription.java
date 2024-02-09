@@ -52,7 +52,8 @@ public class ArchitectureDescription {
                         resideInAnyPackage(aPackage, "java..", "lombok.."),
                         resideInAPackage("org.springframework.stereotype"),
                         resideInAPackage("org.springframework.transaction.annotation"),
-                        resideInAPackage("org.springframework.context.event")
+                        resideInAPackage("org.springframework.context.event"),
+                        resideInAPackage("io.opentelemetry..")
                 ));
     }
 

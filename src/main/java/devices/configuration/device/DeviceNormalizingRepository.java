@@ -42,7 +42,7 @@ class DeviceNormalizingRepository implements DeviceRepository {
 
     @Data
     @Entity
-    @Table(name = "device")
+    @Table(name = "normalized_device")
     @NoArgsConstructor
     static class DeviceEntity {
         @Id
@@ -178,7 +178,7 @@ class DeviceNormalizingRepository implements DeviceRepository {
 
     @Data
     @Entity
-    @Table(name = "opening_hours")
+    @Table(name = "normalized_opening")
     @NoArgsConstructor
     static class OpeningHoursEntity {
         @Id

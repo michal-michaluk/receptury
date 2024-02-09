@@ -3,6 +3,7 @@ package devices.configuration.tools;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -68,5 +69,33 @@ public class JsonConfiguration implements ObjectMapperSupplier {
                         type -> EventTypes.Type.of(type.getName())
                 ));
         EventTypes.init(subtypes);
+    }
+
+    public static <T> T parse(String json, Class<T> type) {
+        try {
+            return OBJECT_MAPPER.readValue(json, type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T parse(JsonNode node, Class<T> type) {
+        try {
+            return OBJECT_MAPPER.treeToValue(node, type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String json(Object object) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static JsonNode jsonNode(Object object) {
+        return OBJECT_MAPPER.valueToTree(object);
     }
 }

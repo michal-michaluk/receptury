@@ -4,6 +4,7 @@ import devices.configuration.communication.BootNotification;
 import devices.configuration.communication.DeviceStatuses;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.Ownership;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,7 @@ class ReadModelsProjection {
     private final DeviceReadsRepository repository;
 
     @EventListener
+    @WithSpan
     public void handle(DeviceConfiguration details) {
         DeviceReadsEntity entity = repository.findById(details.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(details.deviceId()));
@@ -45,6 +47,7 @@ class ReadModelsProjection {
     }
 
     @EventListener
+    @WithSpan
     public void handle(BootNotification boot) {
         DeviceReadsEntity entity = repository.findById(boot.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(boot.deviceId()));
@@ -55,6 +58,7 @@ class ReadModelsProjection {
     }
 
     @EventListener
+    @WithSpan
     public void handle(DeviceStatuses statuses) {
         DeviceReadsEntity entity = repository.findById(statuses.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(statuses.deviceId()));
@@ -68,12 +72,14 @@ class ReadModelsProjection {
     }
 
     @Transactional(readOnly = true)
+    @WithSpan
     public Optional<DeviceDetails> findById(String deviceId) {
         return repository.findById(deviceId)
                 .map(entity -> new DeviceDetails(entity.details, entity.boot));
     }
 
     @Transactional(readOnly = true)
+    @WithSpan
     public List<DevicePin> findAllPins(String provider) {
         return repository.findAllByProvider(provider)
                 .map(DeviceReadsEntity::getPin)
@@ -81,6 +87,7 @@ class ReadModelsProjection {
     }
 
     @Transactional(readOnly = true)
+    @WithSpan
     public Page<DeviceSummary> findAllSummary(String provider, Pageable pageable) {
         return repository.findAllByProvider(provider, pageable)
                 .map(DeviceReadsEntity::getSummary);
@@ -97,7 +104,7 @@ class ReadModelsProjection {
     @Accessors(chain = true)
     @Entity
     @DynamicUpdate
-    @Table(name = "device_reads")
+    @Table(name = "search")
     @NoArgsConstructor
     static class DeviceReadsEntity {
 

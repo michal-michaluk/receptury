@@ -1,8 +1,11 @@
 package devices.configuration.device;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
@@ -11,10 +14,11 @@ import static devices.configuration.device.UpdateDevice.builder;
 
 class DeviceServiceTest {
 
-    final DeviceRepositoryFake devices = new DeviceRepositoryFake();
-    final DeviceService service = new DeviceService(devices);
+    final Map<String, Device> devices = new HashMap<>();
+    final DeviceService service = new DeviceService(new FakeRepo());
 
     @Test
+    @WithSpan
     void getDeviceConfiguration() {
         String deviceId = givenDevice();
         Optional<DeviceConfiguration> configuration = service.getDevice(deviceId);
@@ -29,6 +33,7 @@ class DeviceServiceTest {
     }
 
     @Test
+    @WithSpan
     void getUnknownDeviceConfiguration() {
         Optional<DeviceConfiguration> configuration = service.getDevice("fake-device-id");
 
@@ -36,6 +41,7 @@ class DeviceServiceTest {
     }
 
     @Test
+    @WithSpan
     void createNewDevice() {
         DeviceConfiguration configuration = service.createNewDevice(
                 "new-device-id",
@@ -54,6 +60,7 @@ class DeviceServiceTest {
     }
 
     @Test
+    @WithSpan
     void recreateDeviceWithExistingId() {
         String existingDeviceId = givenDevice();
 
@@ -71,6 +78,7 @@ class DeviceServiceTest {
     }
 
     @Test
+    @WithSpan
     void update() {
         String existingDeviceId = givenDevice();
 
@@ -93,7 +101,19 @@ class DeviceServiceTest {
 
     private String givenDevice() {
         Device device = DeviceFixture.givenDevice();
-        devices.inMemory.put(device.deviceId, device);
+        devices.put(device.deviceId, device);
         return device.deviceId;
+    }
+
+    class FakeRepo implements DeviceRepository {
+        @Override
+        public Optional<Device> get(String deviceId) {
+            return Optional.ofNullable(devices.get(deviceId));
+        }
+
+        @Override
+        public void save(Device device) {
+            devices.put(device.deviceId, device);
+        }
     }
 }

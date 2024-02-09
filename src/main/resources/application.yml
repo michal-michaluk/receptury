@@ -1,5 +1,7 @@
 spring:
   application.name: devices-configuration
+  main:
+    banner-mode: off
   datasource:
     driverClassName: org.postgresql.Driver
     hikari:
@@ -7,10 +9,17 @@ spring:
   jpa:
     hibernate.ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/db.changelog.yaml
   kafka.consumer:
     group-id: devices-configuration-default
     auto-offset-reset: earliest
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://keycloak.auth/realms/iot"
 server:
   shutdown: graceful
   error:
