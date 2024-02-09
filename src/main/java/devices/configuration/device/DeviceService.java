@@ -1,5 +1,6 @@
 package devices.configuration.device;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ public class DeviceService {
 
     private final DeviceRepository repository;
 
+    @WithSpan
     @Transactional(readOnly = true)
     public Optional<DeviceConfiguration> getDevice(String deviceId) {
         return repository.get(deviceId)

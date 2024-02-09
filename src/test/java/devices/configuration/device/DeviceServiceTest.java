@@ -3,8 +3,6 @@ package devices.configuration.device;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
@@ -13,8 +11,8 @@ import static devices.configuration.device.UpdateDevice.builder;
 
 class DeviceServiceTest {
 
-    final Map<String, Device> devices = new HashMap<>();
-    final DeviceService service = new DeviceService(new FakeRepo());
+    final DeviceRepositoryFake devices = new DeviceRepositoryFake();
+    final DeviceService service = new DeviceService(devices);
 
     @Test
     void getDeviceConfiguration() {
@@ -95,19 +93,7 @@ class DeviceServiceTest {
 
     private String givenDevice() {
         Device device = DeviceFixture.givenDevice();
-        devices.put(device.deviceId, device);
+        devices.inMemory.put(device.deviceId, device);
         return device.deviceId;
-    }
-
-    class FakeRepo implements DeviceRepository {
-        @Override
-        public Optional<Device> get(String deviceId) {
-            return Optional.ofNullable(devices.get(deviceId));
-        }
-
-        @Override
-        public void save(Device device) {
-            devices.put(device.deviceId, device);
-        }
     }
 }
