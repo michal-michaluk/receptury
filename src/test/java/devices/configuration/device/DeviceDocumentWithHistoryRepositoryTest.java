@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -16,7 +15,6 @@ import static devices.configuration.TestTransaction.transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
-@Transactional
 @RecordApplicationEvents
 class DeviceDocumentWithHistoryRepositoryTest {
 

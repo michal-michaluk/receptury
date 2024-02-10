@@ -4,13 +4,11 @@ import devices.configuration.IntegrationTest;
 import devices.configuration.tools.FeatureConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import static devices.configuration.JsonAssert.assertThat;
 import static devices.configuration.TestTransaction.transactional;
 
 @IntegrationTest
-@Transactional
 class IntervalRulesRepositoryTest {
 
     @Autowired

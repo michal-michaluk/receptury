@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import static devices.configuration.JsonAssert.assertThat;
 
 @IntegrationTest
-@Transactional
 class ReadModelsProjectionTest {
 
     @Autowired

@@ -4,13 +4,11 @@ import devices.configuration.IntegrationTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import static devices.configuration.JsonAssert.assertThat;
 import static devices.configuration.TestTransaction.transactional;
 import static devices.configuration.installations.ProcessFixture.given;
 
-@Transactional
 @IntegrationTest
 class InstallationEventSourcingRepositoryTest {
 
