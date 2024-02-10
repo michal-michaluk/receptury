@@ -4,7 +4,6 @@ import devices.configuration.IntegrationTest;
 import devices.configuration.communication.CommunicationFixture;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.DeviceFixture;
-import devices.configuration.tools.JsonConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +16,12 @@ import java.util.Optional;
 import static devices.configuration.JsonAssert.assertThat;
 
 @IntegrationTest
-class ReadModelsProjectionTest {
+class DevicesReadModelTest {
 
     @Autowired
-    ReadModelsProjection projection;
+    DevicesReadModel projection;
     @Autowired
-    ReadModelsProjection.DeviceReadsRepository repo;
+    DevicesReadModel.DeviceReadsRepository repo;
 
     final String deviceId = "fixed-device-id";
 
@@ -35,9 +34,8 @@ class ReadModelsProjectionTest {
     void findById() {
         givenDevice();
 
-        Optional<DeviceDetails> read = projection.findById(deviceId);
+        Optional<DeviceDetails> read = projection.queryDetails(deviceId);
 
-        System.out.println(JsonConfiguration.OBJECT_MAPPER.valueToTree(read));
         assertThat(read).isExactlyLike("""
                 {
                   "deviceId": "fixed-device-id",
@@ -94,7 +92,7 @@ class ReadModelsProjectionTest {
     void findAllPins() {
         DeviceConfiguration device = givenDevice();
 
-        List<DevicePin> read = projection.findAllPins(device.ownership().provider());
+        List<DevicePin> read = projection.queryPins(device.ownership().provider());
 
         assertThat(read).isExactlyLike("""
                 [
@@ -117,7 +115,7 @@ class ReadModelsProjectionTest {
     void findAllSummary() {
         DeviceConfiguration device = givenDevice();
 
-        Page<DeviceSummary> read = projection.findAllSummary(device.ownership().provider(), Pageable.ofSize(5));
+        Page<DeviceSummary> read = projection.querySummary(device.ownership().provider(), Pageable.ofSize(5));
 
         assertThat(read).isExactlyLike("""
                 {
@@ -142,36 +140,10 @@ class ReadModelsProjectionTest {
                       ]
                     }
                   ],
-                  "pageable": {
-                    "page": 0,
-                    "size": 5,
-                    "sort": {
-                      "orders": [],
-                      "empty": true,
-                      "unsorted": true,
-                      "sorted": false
-                    },
-                    "offset": 0,
-                    "pageNumber": 0,
-                    "pageSize": 5,
-                    "paged": true,
-                    "unpaged": false
-                  },
-                  "total": 1,
                   "totalPages": 1,
                   "totalElements": 1,
-                  "last": true,
-                  "size": 5,
-                  "number": 0,
-                  "sort": {
-                    "orders": [],
-                    "empty": true,
-                    "unsorted": true,
-                    "sorted": false
-                  },
-                  "numberOfElements":1,
-                  "first":true,
-                  "empty":false
+                  "page": 0,
+                  "size": 5
                 }
                 """);
     }
@@ -179,9 +151,9 @@ class ReadModelsProjectionTest {
     private DeviceConfiguration givenDevice() {
         DeviceConfiguration device = DeviceFixture.givenDeviceConfiguration(deviceId);
 
-        projection.handle(device);
-        projection.handle(CommunicationFixture.boot(deviceId));
-        projection.handle(CommunicationFixture.statuses(deviceId));
+        projection.projectionOf(device);
+        projection.projectionOf(CommunicationFixture.boot(deviceId));
+        projection.projectionOf(CommunicationFixture.statuses(deviceId));
         return device;
     }
 }

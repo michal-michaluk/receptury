@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -91,7 +90,6 @@ class DeviceEventSourcingRepository implements DeviceRepository {
         private Instant time;
         @Getter
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private DomainEvent event;
 
         DeviceEventEntity(String deviceId, EventTypes.Type type, DomainEvent event) {

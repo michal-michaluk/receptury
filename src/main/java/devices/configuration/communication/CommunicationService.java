@@ -26,7 +26,7 @@ public class CommunicationService {
         BootResponse response = new BootResponse(
                 Instant.now(clock),
                 intervals.heartbeatIntervalFor(boot),
-                devices.get(boot.deviceId())
+                devices.queryDevice(boot.deviceId())
         );
         publisher.publishEvent(boot);
         return response;

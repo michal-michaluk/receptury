@@ -30,11 +30,11 @@ class DeviceReadsControllerTest {
     @Autowired
     private MockMvc rest;
     @MockBean
-    private ReadModelsProjection projection;
+    private DevicesReadModel projection;
 
     @Test
     void findById() throws Exception {
-        Mockito.when(projection.findById(eq("device-id")))
+        Mockito.when(projection.queryDetails(eq("device-id")))
                 .thenReturn(Optional.of(new DeviceDetails(
                         givenDeviceConfiguration("device-id"),
                         CommunicationFixture.boot("device-id")
@@ -95,12 +95,12 @@ class DeviceReadsControllerTest {
                         }
                         """, true));
 
-        Mockito.verify(projection).findById("device-id");
+        Mockito.verify(projection).queryDetails("device-id");
     }
 
     @Test
     void getSummary() throws Exception {
-        Mockito.when(projection.findAllSummary(any(), any()))
+        Mockito.when(projection.querySummary(any(), any()))
                 .thenReturn(page(new DeviceSummary(
                         "device-id",
                         DeviceFixture.location(),
@@ -134,35 +134,14 @@ class DeviceReadsControllerTest {
                               ]
                             }
                           ],
-                          "pageable": {
-                            "sort": {
-                              "empty": true,
-                              "sorted": false,
-                              "unsorted": true
-                            },
-                            "offset": 0,
-                            "pageNumber": 0,
-                            "pageSize": 2,
-                            "paged": true,
-                            "unpaged": false
-                          },
                           "totalPages": 1,
                           "totalElements": 1,
-                          "last": true,
                           "size": 2,
-                          "number": 0,
-                          "sort": {
-                            "empty": true,
-                            "sorted": false,
-                            "unsorted": true
-                          },
-                          "numberOfElements": 1,
-                          "first": true,
-                          "empty": false
+                          "page": 0
                         }
                         """, true));
 
-        Mockito.verify(projection).findAllSummary("provider", Pageable.ofSize(2));
+        Mockito.verify(projection).querySummary("provider", Pageable.ofSize(2));
     }
 
     @NotNull

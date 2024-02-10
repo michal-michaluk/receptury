@@ -17,7 +17,7 @@ class ProtocolsToDevicesAndInstallationsMediator implements KnownDevices {
 
     @Override
     @WithSpan
-    public State get(String deviceId) {
+    public State queryDevice(String deviceId) {
         if (devices.getDevice(deviceId).isPresent()) {
             return State.EXISTING;
         }

@@ -12,7 +12,10 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Version;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +75,6 @@ class DeviceDocumentWithHistoryRepository implements DeviceRepository {
 
         @Getter
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private Device device;
 
         public DeviceDocumentEntity setDevice(Device device) {
@@ -99,7 +101,6 @@ class DeviceDocumentWithHistoryRepository implements DeviceRepository {
         private String type;
         private Instant time;
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private DomainEvent event;
 
         DeviceEventEntity(String deviceId, DomainEvent event) {

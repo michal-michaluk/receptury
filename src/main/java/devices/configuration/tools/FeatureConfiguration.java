@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -64,7 +63,6 @@ public class FeatureConfiguration {
         @Id
         private String name;
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private JsonNode configuration;
 
         public ConfigurationEntity(String name) {

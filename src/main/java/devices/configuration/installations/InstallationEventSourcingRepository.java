@@ -12,7 +12,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -74,16 +73,23 @@ class InstallationEventSourcingRepository implements InstallationRepository {
 
     @Repository
     interface EventRepository extends CrudRepository<InstallationEventEntity, UUID> {
-        @Query(value = "select distinct on (type) *" +
-                " from installation_events" +
-                " where device_id = :deviceId" +
-                " order by type, time desc", nativeQuery = true)
+        @Query(value = """
+                select distinct on (type) *
+                from installation_events
+                where order_id = (
+                  select distinct on (device_id) order_id
+                  from installation_events
+                  where device_id = :deviceId and type = 'DeviceAssigned'
+                  order by device_id, time desc
+                )
+                order by type, time desc""", nativeQuery = true)
         List<InstallationEventEntity> findByDeviceId(String deviceId);
 
-        @Query(value = "select distinct on (type) *" +
-                " from installation_events" +
-                " where order_id = :orderId" +
-                " order by type, time desc", nativeQuery = true)
+        @Query(value = """
+                select distinct on (type) *
+                 from installation_events
+                 where order_id = :orderId
+                 order by type, time desc""", nativeQuery = true)
         List<InstallationEventEntity> findByOrderId(String orderId);
     }
 
@@ -99,7 +105,6 @@ class InstallationEventSourcingRepository implements InstallationRepository {
         private String type;
         private Instant time;
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private DomainEvent event;
 
         InstallationEventEntity(String orderId, String deviceId, EventTypes.Type type, DomainEvent event) {

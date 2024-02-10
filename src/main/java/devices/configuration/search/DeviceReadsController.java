@@ -16,23 +16,23 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 class DeviceReadsController {
 
-    private final ReadModelsProjection reads;
+    private final DevicesReadModel reads;
 
     @GetMapping(path = "/devices", params = {"page", "size"},
             produces = "application/vnd.device.summary+json")
     Page<DeviceSummary> getSummary(String provider, Pageable pageable) {
-        return reads.findAllSummary(provider, pageable);
+        return reads.querySummary(provider, pageable);
     }
 
     @GetMapping(path = "/devices", params = {"page", "size"},
             produces = "application/vnd.device.pin+json")
     List<DevicePin> getPins(String provider) {
-        return reads.findAllPins(provider);
+        return reads.queryPins(provider);
     }
 
     @GetMapping(path = "/devices/{deviceId}",
             produces = APPLICATION_JSON_VALUE)
     Optional<DeviceDetails> getDetails(@PathVariable String deviceId) {
-        return reads.findById(deviceId);
+        return reads.queryDetails(deviceId);
     }
 }

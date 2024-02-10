@@ -1,4 +1,4 @@
-package devices.configuration.tools;
+package devices.configuration.auth;
 
 import java.util.Map;
 import java.util.Set;

@@ -23,12 +23,12 @@ import static javax.persistence.EnumType.STRING;
 @Component
 @Transactional
 @AllArgsConstructor
-class KnownDevicesProjection implements KnownDevices {
+class KnownDevicesReadModel implements KnownDevices {
     private final JpaRepository repository;
 
     @Override
     @WithSpan
-    public State get(String deviceId) {
+    public State queryDevice(String deviceId) {
         return repository.findById(deviceId)
                 .map(KnownDeviceEntity::state)
                 .orElse(State.UNKNOWN);
@@ -36,19 +36,19 @@ class KnownDevicesProjection implements KnownDevices {
 
     @EventListener
     @WithSpan
-    public void handleInstallationStart(DeviceAssigned event) {
+    public void projectionOfDeviceInstallation(DeviceAssigned event) {
         put(event.deviceId(), State.IN_INSTALLATION);
     }
 
     @EventListener
     @WithSpan
-    public void handleInstallationFinish(InstallationCompleted event) {
+    public void projectionOfInstallationCompleted(InstallationCompleted event) {
         put(event.deviceId(), State.EXISTING);
     }
 
     @EventListener
     @WithSpan
-    public void handleDeInstallation(DeviceConfiguration event) {
+    public void projectionOfDeInstallation(DeviceConfiguration event) {
         if (event.ownership().isUnowned()) {
             put(event.deviceId(), State.UNKNOWN);
         }

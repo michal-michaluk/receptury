@@ -57,15 +57,16 @@ public class InstallationService {
     @WithSpan
     CompletionResult complete(String orderId) {
         InstallationProcess process = repository.getByOrderId(orderId);
-        CompletionResult finalization = process.complete();
-        if (finalization.isConfirmed()) {
+        CompletionResult result = process.complete();
+        repository.save(process);
+        if (result.isConfirmed()) {
             devices.create(
                     process.deviceId,
-                    finalization.ownership(),
-                    finalization.location()
+                    result.ownership(),
+                    result.location()
             );
         }
-        return finalization;
+        return result;
     }
 
     public Optional<InstallationProcessState> getByDeviceId(String deviceId) {

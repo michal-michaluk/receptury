@@ -17,6 +17,7 @@ public class ArchitectureDescription {
             simpleNameEndingWith("Controller"),
             simpleNameEndingWith("Repository"),
             simpleNameEndingWith("Projection"),
+            simpleNameEndingWith("ReadModel"),
             simpleNameEndingWith("Entity"),
             simpleNameEndingWith("Integration"),
             simpleNameEndingWith("Listener"),

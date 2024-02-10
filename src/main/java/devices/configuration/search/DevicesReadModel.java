@@ -27,13 +27,13 @@ import java.util.stream.Stream;
 @Component
 @Transactional
 @AllArgsConstructor
-class ReadModelsProjection {
+class DevicesReadModel {
 
     private final DeviceReadsRepository repository;
 
     @EventListener
     @WithSpan
-    public void handle(DeviceConfiguration details) {
+    public void projectionOf(DeviceConfiguration details) {
         DeviceReadsEntity entity = repository.findById(details.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(details.deviceId()));
 
@@ -48,7 +48,7 @@ class ReadModelsProjection {
 
     @EventListener
     @WithSpan
-    public void handle(BootNotification boot) {
+    public void projectionOf(BootNotification boot) {
         DeviceReadsEntity entity = repository.findById(boot.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(boot.deviceId()));
 
@@ -59,7 +59,7 @@ class ReadModelsProjection {
 
     @EventListener
     @WithSpan
-    public void handle(DeviceStatuses statuses) {
+    public void projectionOf(DeviceStatuses statuses) {
         DeviceReadsEntity entity = repository.findById(statuses.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(statuses.deviceId()));
 
@@ -73,14 +73,14 @@ class ReadModelsProjection {
 
     @Transactional(readOnly = true)
     @WithSpan
-    public Optional<DeviceDetails> findById(String deviceId) {
+    public Optional<DeviceDetails> queryDetails(String deviceId) {
         return repository.findById(deviceId)
                 .map(entity -> new DeviceDetails(entity.details, entity.boot));
     }
 
     @Transactional(readOnly = true)
     @WithSpan
-    public List<DevicePin> findAllPins(String provider) {
+    public List<DevicePin> queryPins(String provider) {
         return repository.findAllByProvider(provider)
                 .map(DeviceReadsEntity::getPin)
                 .toList();
@@ -88,7 +88,7 @@ class ReadModelsProjection {
 
     @Transactional(readOnly = true)
     @WithSpan
-    public Page<DeviceSummary> findAllSummary(String provider, Pageable pageable) {
+    public Page<DeviceSummary> querySummary(String provider, Pageable pageable) {
         return repository.findAllByProvider(provider, pageable)
                 .map(DeviceReadsEntity::getSummary);
     }
@@ -116,7 +116,6 @@ class ReadModelsProjection {
         private String provider;
 
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private DevicePin pin;
 
         @Type(type = "jsonb")
@@ -124,14 +123,12 @@ class ReadModelsProjection {
         private DeviceSummary summary;
 
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private DeviceConfiguration details;
 
         @Type(type = "jsonb")
         @Column(columnDefinition = "jsonb")
         private DeviceStatuses statuses;
         @Type(type = "jsonb")
-        @Column(columnDefinition = "jsonb")
         private BootNotification boot;
 
         DeviceReadsEntity(String deviceId) {
@@ -144,5 +141,4 @@ class ReadModelsProjection {
             return this;
         }
     }
-
 }

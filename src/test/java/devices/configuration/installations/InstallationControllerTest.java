@@ -9,15 +9,21 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
+import java.util.Optional;
 
 import static devices.configuration.installations.InstallationProcessState.State.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,10 +34,68 @@ class InstallationControllerTest {
     private MockMvc rest;
     @MockBean
     private InstallationService service;
+    @MockBean
+    private InstallationReadModel reads;
+
+    @Test
+    void get() throws Exception {
+        givenReadModel(state("order-id", "device-id", DEVICE_ASSIGNED));
+
+        get("order-id")
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                          "orderId": "order-id",
+                          "deviceId": "device-id",
+                          "state": "DEVICE_ASSIGNED"
+                        }
+                        """, true
+                ));
+
+        verify(reads).queryByOrderId("order-id");
+    }
+
+    @Test
+    void getPage() throws Exception {
+        givenReadModel(
+                state("order-1", "device-id", DEVICE_ASSIGNED),
+                state("order-2", "device-id", DEVICE_ASSIGNED));
+
+        get1Page()
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                          "content": [
+                            {
+                              "orderId": "order-1",
+                              "deviceId": "device-id",
+                              "state": "DEVICE_ASSIGNED"
+                            },
+                            {
+                              "orderId": "order-2",
+                              "deviceId": "device-id",
+                              "state": "DEVICE_ASSIGNED"
+                            }
+                          ],
+                          "totalPages": 1,
+                          "totalElements": 2,
+                          "page":0,
+                          "size":2
+                        }
+                        """, true
+                ));
+
+        verify(reads).query(params(), Pageable.ofSize(10));
+    }
+
+    @NotNull
+    private static InstallationReadModel.QueryParams params() {
+        return new InstallationReadModel.QueryParams(List.of());
+    }
 
     @Test
     void noBody() throws Exception {
-        rest.perform(patch("/installations/{orderId}", "order-id")
+        rest.perform(MockMvcRequestBuilders.patch("/installations/{orderId}", "order-id")
                         .with(jwt())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -42,7 +106,7 @@ class InstallationControllerTest {
 
     @Test
     void noCommand() throws Exception {
-        rest.perform(patch("/installations/{orderId}", "order-id")
+        rest.perform(MockMvcRequestBuilders.patch("/installations/{orderId}", "order-id")
                         .with(jwt())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,9 +120,9 @@ class InstallationControllerTest {
 
     @Test
     void assignDevice() throws Exception {
-        expect(state("order-id", "device-id", DEVICE_ASSIGNED));
+        given(state("order-id", "device-id", DEVICE_ASSIGNED));
 
-        when(
+        patch(
                 """
                         {
                          "assignDevice": "device-id"
@@ -72,16 +136,16 @@ class InstallationControllerTest {
                                   "deviceId": "device-id",
                                   "state": "DEVICE_ASSIGNED"
                                 }
-                                """));
+                                """, true));
 
         verify(service).assignDevice("order-id", "device-id");
     }
 
     @Test
     void assignLocation() throws Exception {
-        expect(state("order-id", "device-id", DEVICE_ASSIGNED));
+        given(state("order-id", "device-id", DEVICE_ASSIGNED));
 
-        when(
+        patch(
                 """
                         {
                           "assignLocation": {
@@ -105,16 +169,16 @@ class InstallationControllerTest {
                           "deviceId": "device-id",
                           "state": "DEVICE_ASSIGNED"
                         }
-                        """));
+                        """, true));
 
         verify(service).assignLocation("order-id", DeviceFixture.location());
     }
 
     @Test
     void confirmBootData() throws Exception {
-        expect(state("order-id", "device-id", BOOTED));
+        given(state("order-id", "device-id", BOOTED));
 
-        when(
+        patch(
                 """
                         {
                           "confirmBoot": true
@@ -127,14 +191,14 @@ class InstallationControllerTest {
                           "deviceId": "device-id",
                           "state": "BOOTED"
                         }
-                        """));
+                        """, true));
 
         verify(service).confirmBootData("order-id");
     }
 
     @Test
     void wrongConfirmBootData() throws Exception {
-        rest.perform(patch("/installations/{orderId}", "order-id")
+        rest.perform(MockMvcRequestBuilders.patch("/installations/{orderId}", "order-id")
                         .with(jwt())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -150,9 +214,9 @@ class InstallationControllerTest {
 
     @Test
     void complete() throws Exception {
-        expect(state("order-id", "device-id", COMPLETED));
+        given(state("order-id", "device-id", COMPLETED));
 
-        when(
+        patch(
                 """
                         {
                           "complete": true
@@ -165,7 +229,7 @@ class InstallationControllerTest {
                           "deviceId": "device-id",
                           "state": "COMPLETED"
                         }
-                        """
+                        """, true
                 ));
 
         verify(service).complete("order-id");
@@ -173,7 +237,7 @@ class InstallationControllerTest {
 
     @Test
     void wrongComplete() throws Exception {
-        rest.perform(patch("/installations/{orderId}", "order-id")
+        rest.perform(MockMvcRequestBuilders.patch("/installations/{orderId}", "order-id")
                         .with(jwt())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -187,26 +251,43 @@ class InstallationControllerTest {
         verifyNoInteractions(service);
     }
 
-    private void when(@Language("JSON") String request, @Language("JSON") String response) throws Exception {
-        rest.perform(patch("/installations/{orderId}", "order-id")
-                        .with(jwt())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
-                .andExpect(status().isOk())
-                .andExpect(content().json(response));
+    private ResultActions get(String orderId) throws Exception {
+        return rest.perform(MockMvcRequestBuilders.get("/installations/{orderId}", orderId)
+                .with(jwt())
+                .accept(MediaType.APPLICATION_JSON));
     }
 
-    private ResultActions when(@Language("JSON") String request) throws Exception {
-        return rest.perform(patch("/installations/{orderId}", "order-id")
+    private ResultActions get1Page() throws Exception {
+        return rest.perform(MockMvcRequestBuilders.get("/installations?page=0&size=10")
+                .with(jwt())
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions patch(@Language("JSON") String request) throws Exception {
+        return rest.perform(MockMvcRequestBuilders.patch("/installations/{orderId}", "order-id")
                 .with(jwt())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request));
     }
 
-    private OngoingStubbing<InstallationProcessState> expect(InstallationProcessState state) {
-        return Mockito.when(service.getByOrderId(state.orderId())).thenReturn(state);
+    private OngoingStubbing<InstallationProcessState> given(InstallationProcessState state) {
+        return Mockito.when(service.getByOrderId(state.orderId()))
+                .thenReturn(state);
+    }
+
+    private OngoingStubbing<Optional<InstallationProcessState>> givenReadModel(InstallationProcessState state) {
+        return Mockito.when(reads.queryByOrderId(state.orderId()))
+                .thenReturn(Optional.of(state));
+    }
+
+    private OngoingStubbing<Page<InstallationProcessState>> givenReadModel(InstallationProcessState... states) {
+        return Mockito.when(reads.query(Mockito.any(), Mockito.any()))
+                .thenReturn(page(List.of(states)));
+    }
+
+    private Page<InstallationProcessState> page(List<InstallationProcessState> states) {
+        return new PageImpl<>(states);
     }
 
     @NotNull

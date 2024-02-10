@@ -162,6 +162,22 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+        - createTable:
+            tableName: installation
+            columns:
+              - column:
+                  name: order_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    unique: true
+              - column:
+                  name: state
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
   - changeSet:
       id: 847e1118-1e1f-45ed-86b4-478bc3b22af0
       author: michal.michaluk

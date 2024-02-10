@@ -7,16 +7,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.vladmihalcea.hibernate.type.util.ObjectMapperSupplier;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,8 +41,10 @@ public class JsonConfiguration implements ObjectMapperSupplier {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false)
-            .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
-
+            .configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+            .registerModule(new SimpleModule()
+                    .addSerializer(Page.class, new PageImplJacksonSerializer())
+            );
 
     @Bean
     ObjectMapper objectMapper() {
@@ -97,5 +105,34 @@ public class JsonConfiguration implements ObjectMapperSupplier {
 
     public static JsonNode jsonNode(Object object) {
         return OBJECT_MAPPER.valueToTree(object);
+    }
+
+    public record SimplePage<T>(
+            List<T> content,
+            int totalPages,
+            int totalElements,
+            int page,
+            int size
+    ) implements Iterable<T> {
+        @Override
+        public Iterator<T> iterator() {
+            return content.iterator();
+        }
+    }
+
+    @JsonComponent
+    static class PageImplJacksonSerializer extends JsonSerializer<Page> {
+        @Override
+        public void serialize(final Page page,
+                              final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializers) throws IOException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("content", page.getContent());
+            jsonGenerator.writeNumberField("totalPages", page.getTotalPages());
+            jsonGenerator.writeNumberField("totalElements", page.getTotalElements());
+            jsonGenerator.writeNumberField("page", page.getNumber());
+            jsonGenerator.writeNumberField("size", page.getSize());
+            jsonGenerator.writeEndObject();
+        }
     }
 }
