@@ -7,6 +7,11 @@ flowchart LR
             search-handleBootNotification[handleBootNotification]
             search-handleStatusNotification[handleStatusNotification]
         end
+        subgraph SearchReadModel
+            search-findById[findById]
+            search-findAllPins[findAllPins]
+            search-findAllSummary[findAllSummary]
+        end
     end
     DeviceConfigurationUpdated --> search-handleDeviceConfiguration
     BootNotification --> search-handleBootNotification
@@ -30,20 +35,27 @@ flowchart LR
             communication-handleBoot
             communication-handleStatus
         end
-        subgraph KnownDevices
-            communication-get[check]
+        subgraph communication-decision[KnownDevices]
+            communication-get[get]
         end
         subgraph communication-events
             BootNotification
             StatusNotification
         end
     end
+
+    subgraph KnownDevicesProjection
+        known-get[get]
+        known-handleInstallationStart[handleInstallationStart]
+        known-handleInstallationFinish[handleInstallationFinish]
+        known-handleDeInstallation[handleDeInstallation]
+    end
+    
     communication-handleBoot --> BootNotification
     communication-handleStatus --> StatusNotification
-    CommunicationService --> KnownDevices
-    DeviceAssigned --> KnownDevices
-    InstallationCompleted --> KnownDevices
-    DeviceConfigurationUpdated --> KnownDevices
+    DeviceAssigned --> known-handleInstallationStart
+    InstallationCompleted --> known-handleInstallationFinish
+    DeviceConfigurationUpdated --> known-handleDeInstallation
 
     subgraph installations[Device installation processes]
         direction TB
@@ -111,7 +123,13 @@ flowchart LR
     OpeningHoursUpdated --> DeviceConfigurationUpdated
 
     subgraph Operator / Maintainer
-        operator-patchStation["PATCH /devices/{deviceId}"]
+        operator-patchDevice["PATCH /devices/{deviceId}"]
+        operator-getSummary["GET /devices"]
+        operator-getPins["GET /devices"]
+        operator-getDetails["GET /devices/{deviceId}"]
     end
-    operator-patchStation --> devices-updateDevice
+    operator-patchDevice --> devices-updateDevice
+    operator-getSummary --> search-findAllSummary
+    operator-getPins --> search-findAllPins
+    operator-getDetails --> search-findById
 ```
