@@ -1,0 +1,62 @@
+sequenceDiagram
+    participant scenario
+    box web
+    end
+    box installations
+        participant InstallationService
+        participant InstallationReadModel
+        participant scenario
+    end
+    box communication
+        participant KnownDevicesReadModel
+    end
+    box mediators
+    end
+    box device
+        participant DeviceService
+    end
+    box search
+        participant DevicesReadModel
+    end
+    box persistence
+    end
+    scenario ->>+ InstallationService: handleWorkOrder
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return handleWorkOrder
+    scenario ->>+ InstallationReadModel: query
+    InstallationReadModel ->>- scenario: return query
+    scenario ->>+ InstallationReadModel: queryByOrderId
+    InstallationReadModel ->>- scenario: return queryByOrderId
+    scenario ->>+ InstallationService: assignDevice
+    InstallationService ->>+ KnownDevicesReadModel: projectionOfDeviceInstallation
+    KnownDevicesReadModel ->>- InstallationService: return projectionOfDeviceInstallation
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return assignDevice
+    scenario ->>+ InstallationService: assignLocation
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return assignLocation
+    scenario ->>+ InstallationService: handleBootNotification
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return handleBootNotification
+    scenario ->>+ InstallationReadModel: queryByOrderId
+    InstallationReadModel ->>- scenario: return queryByOrderId
+    scenario ->>+ InstallationService: confirmBootData
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return confirmBootData
+    scenario ->>+ InstallationService: complete
+    InstallationService ->>+ KnownDevicesReadModel: projectionOfInstallationCompleted
+    KnownDevicesReadModel ->>- InstallationService: return projectionOfInstallationCompleted
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>+ DeviceService: createNewDevice
+    DeviceService ->>+ KnownDevicesReadModel: projectionOfDeInstallation
+    KnownDevicesReadModel ->>- DeviceService: return projectionOfDeInstallation
+    DeviceService ->>+ DevicesReadModel: projectionOf
+    DevicesReadModel ->>- DeviceService: return projectionOf
+    DeviceService ->>- InstallationService: return createNewDevice
+    InstallationService ->>- scenario: return complete
