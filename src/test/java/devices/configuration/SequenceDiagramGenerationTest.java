@@ -29,7 +29,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static devices.configuration.SequenceDiagramGenerationTest.Mermaid.SequenceDiagram.encode;
 import static java.nio.file.StandardOpenOption.READ;
 
 public class SequenceDiagramGenerationTest {
@@ -82,13 +81,13 @@ public class SequenceDiagramGenerationTest {
                                 if (fullQualifiedClassName.endsWith("Repository")) {
                                     yield "Repository";
                                 } else {
-                                    yield encode(fullQualifiedClassName
-                                            .substring(fullQualifiedClassName.lastIndexOf('.') + 1));
+                                    yield fullQualifiedClassName
+                                            .substring(fullQualifiedClassName.lastIndexOf('.') + 1);
                                 }
                             }
                             case "db.statement" -> "Repository";
                             case "http.route" -> "http";
-                            default -> encode(span.name());
+                            default -> span.name();
                         }).orElseGet(() -> switch (span.name()) {
                             case "INSERT", "UPDATE", "SELECT", "DELETE" -> "Repository";
                             case "GET", "PUT", "POST", "PATCH" -> "http"; // "DELETE" is ambiguous
@@ -98,7 +97,7 @@ public class SequenceDiagramGenerationTest {
                             case String name &&name.startsWith("INSERT ") ->"Repository";
                             case String name &&name.startsWith("UPDATE ") ->"Repository";
                             case String name &&name.startsWith("DELETE ") ->"Repository";
-                                default -> encode(span.name());
+                                default -> span.name();
                         });
 
         return Parameters.builder()
@@ -107,7 +106,7 @@ public class SequenceDiagramGenerationTest {
                 .exclude(span -> span.name().startsWith("InstallationController.")
                                  || Set.of("http", "Repository", "InstallationsToDevicesMediator").contains(participantName.apply(span))
                 )
-                .callName(span -> span.attribute("code.function").orElseGet(() -> encode(span.name())))
+                .callName(span -> span.attribute("code.function").orElseGet(() -> span.name()))
                 .argumentsFilter(span -> Stream.of())
                 //Function<Span, Stream<Map.Entry<String, Object>>> argumentsFilter = span -> span.attributes(Set.of("order"));
                 .participantName(participantName)
@@ -116,10 +115,9 @@ public class SequenceDiagramGenerationTest {
                     case "http" -> "web";
                     case String name &&span.attribute("code.namespace")
                             .filter(namespace -> namespace.startsWith(packagePrefix)).isPresent() ->
-                        encode(span.attribute("code.namespace")
+                        span.attribute("code.namespace")
                                 .map(namespace -> namespace.substring(packagePrefix.length(), namespace.lastIndexOf('.')))
-                                .orElseThrow()
-                        );
+                                .orElseThrow();
                         default -> participantName.apply(span);
                 })
                 .build();
@@ -287,25 +285,24 @@ public class SequenceDiagramGenerationTest {
                 DiagramParameters diagramParameters
         ) implements Printable {
             @Builder
-            public record DiagramParameters(List<String> participantsGroupsOrder) {
-            }
+            public record DiagramParameters(List<String> participantsGroupsOrder) {}
 
             @Override
             public void print(PrintWriter out) {
                 out.println("sequenceDiagram");
-                out.println("  participant " + parameters.participantName().apply(scenario.root()));
+                out.println("  participant " + encode(parameters.participantName().apply(scenario.root())));
                 diagramParameters.participantsGroupsOrder()
                         .forEach(group -> {
                             var groupParticipants = scenario.participantGroup(group);
                             if (groupParticipants.size() == 1) {
                                 String first = groupParticipants.iterator().next();
                                 if (group.equals(first)) {
-                                    out.println("  participant " + first);
+                                    out.println("  participant " + encode(first));
                                     return;
                                 }
                             }
                             out.println("  box " + group);
-                            groupParticipants.forEach(participant -> out.println("    participant " + participant));
+                            groupParticipants.forEach(participant -> out.println("    participant " + encode(participant)));
                             out.println("  end");
                         });
                 scenario.calls().stream()
@@ -313,14 +310,14 @@ public class SequenceDiagramGenerationTest {
                         .forEach(call -> {
                             switch (call.variant) {
                                 case INITIATING -> {
-                                    out.println("  " + call.parentParticipant() + " ->>+ " + call.childParticipant() + ": " + call.callName());
+                                    out.println("  " + encode(call.parentParticipant()) + " ->>+ " + encode(call.childParticipant()) + ": " + encode(call.callName()));
                                     parameters.argumentsFilter().apply(call.child())
-                                            .forEach(arguments -> out.println("  Note left of " + call.childParticipant() + ": " + encode(arguments.getKey()) + " = " + encode(arguments.getValue().toString())));
+                                            .forEach(arguments -> out.println("  Note left of " + encode(call.childParticipant()) + ": " + encode(arguments.getKey()) + " = " + encode(arguments.getValue().toString())));
                                 }
                                 case RETURNING ->
-                                        out.println("  " + call.parentParticipant() + " ->>- " + call.childParticipant() + ": " + call.callName());
+                                        out.println("  " + encode(call.parentParticipant()) + " ->>- " + encode(call.childParticipant()) + ": " + encode(call.callName()));
                                 case SELF_CALL ->
-                                        out.println("  " + call.parentParticipant() + " ->> " + call.childParticipant() + ": " + call.callName());
+                                        out.println("  " + encode(call.parentParticipant()) + " ->> " + encode(call.childParticipant()) + ": " + (call.callName()));
                             }
                         });
             }
