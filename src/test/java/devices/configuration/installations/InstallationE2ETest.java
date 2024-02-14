@@ -1,40 +1,35 @@
 package devices.configuration.installations;
 
-import com.sun.net.httpserver.HttpServer;
 import devices.configuration.IntegrationTest;
 import devices.configuration.RequestsFixture;
 import devices.configuration.auth.AuthFixture;
 import devices.configuration.communication.CommunicationFixture;
 import devices.configuration.device.DeviceFixture;
+import documentation.generator.TelemetryCollector;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import io.opentelemetry.proto.trace.v1.TracesData;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.IterableAssert;
 import org.assertj.core.api.ObjectAssert;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.function.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 
 import static devices.configuration.TestTransaction.transactional;
 import static devices.configuration.installations.InstallationFixture.givenWorkOrderFor;
 import static devices.configuration.installations.InstallationProcessState.State.*;
-import static java.nio.file.StandardOpenOption.*;
+import static documentation.generator.TelemetryCollector.collectorToDirectory;
 
 @IntegrationTest(profiles = {"auth-test", "integration-test"})
 class InstallationE2ETest {
 
+    private static TelemetryCollector collector;
     @Autowired
     AuthFixture auth;
     @Autowired
@@ -52,41 +47,12 @@ class InstallationE2ETest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        collector();
+        collector = collectorToDirectory(Path.of("traces"));
     }
 
-    private static void collector() throws IOException {
-        var atomic = new AtomicLong(0);
-        HttpServer server = HttpServer.create(new InetSocketAddress(43418), 0);
-        server.createContext("/", exchange -> {
-            exchange.sendResponseHeaders(200, 0);
-            Path path = Path.of("traces", "trace-" + atomic.getAndIncrement() + ".proto");
-            System.out.println("writing to file: " + path.toAbsolutePath());
-            try (OutputStream out = Files.newOutputStream(path, CREATE, TRUNCATE_EXISTING)) {
-                exchange.getRequestBody().transferTo(out);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            //System.out.println(TracesData.parseFrom(exchange.getRequestBody()));
-            exchange.close();
-        });
-        server.start();
-        process(Files.list(Path.of("traces")));
-    }
-
-    @Test
-    void processProto() throws IOException {
-        process(Files.list(Path.of("traces")));
-    }
-
-    public static void process(Stream<Path> traces) {
-        traces.map(path -> Try.call(() -> TracesData.parseFrom(Files.newInputStream(path, READ)))
-                        .getOrThrow(RuntimeException::new))
-//                .flatMap(trace -> trace.getResourceSpansList().stream())
-//                .flatMap(trace -> trace.getScopeSpansList().stream())
-//                .flatMap(trace -> trace.getSpansList().stream())
-//                .map(span -> span.getName())
-                .forEach(System.out::println);
+    @AfterAll
+    static void afterAll() throws Exception {
+        collector.close();
     }
 
     @Test
