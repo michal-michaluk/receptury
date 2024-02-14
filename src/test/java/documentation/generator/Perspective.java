@@ -7,7 +7,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-record Perspective(Scenarios scenarios, List<Call> calls,
+record Perspective(Scenarios scenarios,
+                   List<Call> calls,
                    Participants participants) {
 
     List<Span> scenarioRoots() {

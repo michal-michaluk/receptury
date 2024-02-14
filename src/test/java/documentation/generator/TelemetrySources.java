@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.READ;
 
-class Telemetry {
+class TelemetrySources {
     @NotNull
     static TelemetrySpans fromProtoFiles(Stream<Path> traces) {
         Stream<TracesData> tracesDataStream = traces

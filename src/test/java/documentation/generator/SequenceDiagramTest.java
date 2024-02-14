@@ -20,19 +20,16 @@ class SequenceDiagramTest {
 
     @Test
     void processProto() throws IOException {
-        process(Files.list(Path.of("src/test/resources/traces/devices-installation")));
-    }
-
-    static void process(Stream<Path> traces) {
-        TelemetrySpans telemetry = Telemetry.fromProtoFiles(traces);
-        PerspectiveParameters parameters = exampleParameters();
-        DiagramParameters diagramParameters = exampleDiagramParameters();
-        Scenarios scenarios = Scenarios.selectScenarios(telemetry, parameters);
-        Scenarios includeInPerspective = scenarios.subsetOfScenarios(parameters.scenarioPredicate());
-        Perspective perspective = Perspective.perspective(telemetry, includeInPerspective, parameters);
-        Printable diagram = new Mermaid.SequenceDiagram(perspective, parameters, diagramParameters);
-        Path path = Paths.get("src/docs/installation-sequence.mmd");
-        saveToFile(path, diagram);
+        Stream<Path> source = Files.list(Path.of("src/test/resources/traces/devices-installation"));
+        TelemetrySpans telemetry = TelemetrySources.fromProtoFiles(source);
+        List<PerspectiveParameters> perspectives = List.of(exampleParameters());
+        perspectives.forEach(parameters -> {
+            Scenarios scenarios = telemetry.selectScenarios(parameters);
+            Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
+            Printable diagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
+            Path output = Paths.get("src/docs/installation-sequence.mmd");
+            saveToFile(output, diagram);
+        });
     }
 
     private static void saveToFile(Path path, Printable diagram) {
@@ -43,11 +40,8 @@ class SequenceDiagramTest {
             throw new RuntimeException(e);
         }
         try (BufferedWriter file = Files.newBufferedWriter(path);
-             PrintWriter writer = new PrintWriter(file)) {
-
-            try (PrintWriter out = new PrintWriter(writer)) {
-                diagram.print(out);
-            }
+             PrintWriter out = new PrintWriter(file)) {
+            diagram.print(out);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
