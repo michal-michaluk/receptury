@@ -1,0 +1,81 @@
+## Example diagram
+
+Diagram automatically embedded in Markdown document.
+Generated and embedded by `Sink.toMarkdown("src/docs/markdown-with-diagram.md", "%%device-installation-sequence")`.
+
+```mermaid
+%%device-installation-sequence
+sequenceDiagram
+    participant scenario
+    box web
+    end
+    box installations
+        participant InstallationReadModel
+        participant InstallationService
+    end
+    box mediators
+    end
+    box device
+        participant DeviceService
+    end
+    box communication
+        participant KnownDevicesReadModel
+    end
+    box search
+        participant DevicesReadModel
+    end
+    box persistence
+    end
+    scenario ->>+ InstallationService: handleWorkOrder
+    Note left of InstallationService: WorkOrder [<br/> orderId = order-1<br/> ownership = Ownership [<br/> operator = Devicex.nl<br/> provider = public-devices]]
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = null<br/> state = PENDING]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return handleWorkOrder
+    scenario ->>+ InstallationReadModel: query
+    InstallationReadModel ->>- scenario: return query
+    scenario ->>+ InstallationReadModel: queryByOrderId
+    InstallationReadModel ->>- scenario: return queryByOrderId
+    scenario ->>+ InstallationService: assignDevice
+    InstallationService ->>+ KnownDevicesReadModel: projectionOfDeviceInstallation
+    Note left of KnownDevicesReadModel: DeviceAssigned [<br/> orderId = order-1<br/> deviceId = device-2]
+    KnownDevicesReadModel ->>- InstallationService: return projectionOfDeviceInstallation
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = device-2<br/> state = DEVICE_ASSIGNED]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return assignDevice
+    scenario ->>+ InstallationService: assignLocation
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = device-2<br/> state = DEVICE_ASSIGNED]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return assignLocation
+    scenario ->>+ InstallationService: handleBootNotification
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = device-2<br/> state = BOOTED]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return handleBootNotification
+    scenario ->>+ InstallationReadModel: queryByOrderId
+    InstallationReadModel ->>- scenario: return queryByOrderId
+    scenario ->>+ InstallationService: confirmBootData
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = device-2<br/> state = BOOTED]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>- scenario: return confirmBootData
+    scenario ->>+ InstallationService: complete
+    InstallationService ->>+ KnownDevicesReadModel: projectionOfInstallationCompleted
+    Note left of KnownDevicesReadModel: InstallationCompleted [<br/> orderId = order-1<br/> deviceId = device-2]
+    KnownDevicesReadModel ->>- InstallationService: return projectionOfInstallationCompleted
+    InstallationService ->>+ InstallationReadModel: projectionOf
+    Note left of InstallationReadModel: InstallationProcessState [<br/> orderId = order-1<br/> deviceId = device-2<br/> state = COMPLETED]
+    InstallationReadModel ->>- InstallationService: return projectionOf
+    InstallationService ->>+ DeviceService: createNewDevice
+    DeviceService ->>+ KnownDevicesReadModel: projectionOfDeInstallation
+    Note left of KnownDevicesReadModel: DeviceConfiguration [<br/> deviceId = device-2<br/> ownership = Ownership [<br/> operator = Devicex.nl<br/> provider = public-devices]<br/> location = Location [<br/> street = Rakietowa<br/> houseNumber = 1A<br/> city = Wrocław<br/> postalCode = 54-621<br/> state = null<br/> country = POL<br/> coordinates = Coordinates [<br/> longitude = 51.09836221719513<br/> latitude = 16.931752852309156]]<br/> openingHours = OpeningHours [<br/> alwaysOpen = true<br/> opened = null]<br/> settings = Settings [<br/> autoStart = false<br/> remoteControl = false<br/> billing = false<br/> reimbursement = false<br/> showOnMap = false<br/> publicAccess = false]<br/> violations = Violations [<br/> operatorNotAssigned = false<br/> providerNotAssigned = false<br/> locationMissing = false<br/> showOnMapButMissingLocation = false<br/> showOnMapButNoPublicAccess = false]<br/> visibility = Visibility [<br/> roamingEnabled = false<br/> forCustomer = INACCESSIBLE_AND_HIDDEN_ON_MAP]]
+    KnownDevicesReadModel ->>- DeviceService: return projectionOfDeInstallation
+    DeviceService ->>+ DevicesReadModel: projectionOf
+    DevicesReadModel ->>- DeviceService: return projectionOf
+    DeviceService ->>- InstallationService: return createNewDevice
+    InstallationService ->>- scenario: return complete
+```
+
+Any text can surround the diagram.

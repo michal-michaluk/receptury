@@ -47,7 +47,7 @@ class InstallationE2ETest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        collector = collectorToDirectory(Path.of("traces"));
+        collector = collectorToDirectory(Path.of("src/test/resources/traces/devices-e2e"));
     }
 
     @AfterAll

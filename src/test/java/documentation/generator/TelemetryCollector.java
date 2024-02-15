@@ -19,11 +19,16 @@ public class TelemetryCollector implements AutoCloseable {
         this.server = server;
     }
 
-    public static TelemetryCollector collectorToTempDirectory() throws IOException {
+    public record TelemetryCollectorWithOutputDirectory(TelemetryCollector collector, Path tracesDirectory) {}
+
+    public static TelemetryCollectorWithOutputDirectory collectorToTempDirectory() throws IOException {
         Path directory = Files.createTempDirectory("traces-");
+        directory.toFile().deleteOnExit();
         var atomic = new AtomicLong(0);
-        return TelemetryCollector.collector(
-                () -> Files.newOutputStream(directory.resolve(atomic.getAndIncrement() + ".trace"), CREATE, TRUNCATE_EXISTING)
+        return new TelemetryCollectorWithOutputDirectory(
+                TelemetryCollector.collector(
+                        () -> Files.newOutputStream(directory.resolve(atomic.getAndIncrement() + ".trace"), CREATE, TRUNCATE_EXISTING)
+                ), directory
         );
     }
 
@@ -31,7 +36,7 @@ public class TelemetryCollector implements AutoCloseable {
         Files.createDirectories(directory);
         var atomic = new AtomicLong(0);
         return TelemetryCollector.collector(
-                () -> Files.newOutputStream(directory.resolve(atomic.getAndIncrement() + ".trace"), CREATE, TRUNCATE_EXISTING)
+                () -> Files.newOutputStream(directory.resolve("trace-" + atomic.getAndIncrement() + ".otlp"), CREATE, TRUNCATE_EXISTING)
         );
     }
 
@@ -65,6 +70,6 @@ public class TelemetryCollector implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        server.stop(1);
+//        server.stop(1);
     }
 }

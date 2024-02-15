@@ -4,9 +4,7 @@ import documentation.generator.Mermaid.SequenceDiagram.DiagramParameters;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,31 +18,16 @@ class SequenceDiagramTest {
 
     @Test
     void processProto() throws IOException {
-        Stream<Path> source = Files.list(Path.of("src/test/resources/traces/devices-installation"));
+        Stream<Path> source = Files.list(Path.of("src/test/resources/traces/devices-e2e"));
         TelemetrySpans telemetry = TelemetrySources.fromProtoFiles(source);
         List<PerspectiveParameters> perspectives = List.of(exampleParameters());
         perspectives.forEach(parameters -> {
             Scenarios scenarios = telemetry.selectScenarios(parameters);
             Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
             Printable diagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
-            Path output = Paths.get("src/docs/installation-sequence.mmd");
-            saveToFile(output, diagram);
+            Sink.toFile(Paths.get("src/docs/installation-e2e.mmd"))
+                    .accept(diagram);
         });
-    }
-
-    private static void saveToFile(Path path, Printable diagram) {
-        try {
-            Files.deleteIfExists(path);
-            Files.createFile(path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try (BufferedWriter file = Files.newBufferedWriter(path);
-             PrintWriter out = new PrintWriter(file)) {
-            diagram.print(out);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @NotNull
