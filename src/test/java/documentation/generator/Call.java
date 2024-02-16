@@ -37,6 +37,13 @@ record Call(
         return child.start();
     }
 
+    Instant end() {
+        if (variant == Option.RETURNING) {
+            return parent.start();
+        }
+        return child.end();
+    }
+
     Stream<Call> includeReturning() {
         if (parent() == null || variant == Option.SELF_CALL) {
             return Stream.of(this);

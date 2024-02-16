@@ -36,6 +36,8 @@ import java.util.stream.Stream;
 import static devices.configuration.TestTransaction.transactional;
 import static devices.configuration.installations.InstallationFixture.givenWorkOrderFor;
 import static devices.configuration.installations.InstallationProcessState.State.*;
+import static documentation.generator.Step.then;
+import static documentation.generator.Step.when;
 import static documentation.generator.TelemetryCollector.collectorToTempDirectory;
 
 @IntegrationTest(profiles = {"auth-test", "integration-test"})
@@ -61,12 +63,12 @@ class FullScenarioProcessingTest {
         perspectives.forEach(parameters -> {
             Scenarios scenarios = telemetry.selectScenarios(parameters);
             Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
-            Printable diagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
-            Sink.toFile(Paths.get("src/docs/installation-e2e.mmd"))
-                    .accept(diagram);
-            Sink.toMarkdown(Paths.get("src/docs/markdown-with-include.md"),
-                            "%%device-installation-sequence")
-                    .accept(diagram);
+            Printable sequenceDiagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
+            Sink.toFile(Paths.get("src/docs/installation-sequence.mmd"))
+                    .accept(sequenceDiagram);
+            Printable gantt = new Mermaid.Gantt(perspective, parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build());
+            Sink.toFile(Paths.get("src/docs/installation-trace.mmd"))
+                    .accept(gantt);
         });
     }
 
@@ -91,46 +93,88 @@ class FullScenarioProcessingTest {
         generateDocumentation();
     }
 
+    public class Actors {
+        public static final Actor salesSystem = Actor.system("Sales System");
+        public static final Actor device = Actor.device("Device");
+        public static final Actor installer = Actor.userRole("Installer");
+        public static final Actor devicesDatabase = Actor.database("Devices Database");
+    }
+
+    Scenario scenario = Scenario.title("Device Installation Process")
+            .description("The process of installing a device in the system")
+            .precondition("Device sold to customer in sales subdomain")
+            .precondition("Work order is created for the device installation")
+            .includes("Device installation process",
+                    "Device configuration",
+                    "Communication with device")
+            .excludes(
+                    "Sales process",
+                    "Creation of work order",
+                    "Communication to end customer");
+
     @Test
     @WithSpan
     void fullInstallation() {
+        scenario.begin();
         String orderId = "order-1";
-        transactional(() -> service.handleWorkOrder(givenWorkOrderFor(orderId, DeviceFixture.ownership())));
-        get().contains(state(orderId, PENDING));
 
-        get(orderId)
-                .isEqualTo(state(orderId, PENDING));
+        when(Actors.salesSystem, "A work order arrives", () ->
+                transactional(() -> service.handleWorkOrder(
+                        Step.highlight("Work order", givenWorkOrderFor(orderId, DeviceFixture.ownership()))
+                ))
+        );
 
-        patch(orderId, "{ \"assignDevice\": \"%s\" }".formatted(deviceId))
-                .isEqualTo(state(orderId, deviceId, DEVICE_ASSIGNED));
+        then("The work order is pending", () -> {
+            get().contains(state(orderId, PENDING));
 
-        patch(orderId, """
-                {
-                  "assignLocation": {
-                    "street": "Rakietowa",
-                    "houseNumber": "1A",
-                    "city": "Wrocław",
-                    "postalCode": "54-621",
-                    "state": null,
-                    "country": "POL",
-                    "coordinates": {
-                      "longitude": 51.09836221719513,
-                      "latitude": 16.931752852309156
-                    }
-                  }
-                }
-                """)
-                .isEqualTo(state(orderId, deviceId, DEVICE_ASSIGNED));
+            get(orderId)
+                    .isEqualTo(state(orderId, PENDING));
+        });
 
-        transactional(() -> service.handleBootNotification(CommunicationFixture.boot(deviceId)));
-        get(orderId)
-                .isEqualTo(state(orderId, deviceId, BOOTED));
+        when(Actors.installer, "The device is assigned to the work order", () ->
+                patch(orderId, "{ \"assignDevice\": \"%s\" }".formatted(deviceId))
+                        .isEqualTo(state(orderId, deviceId, DEVICE_ASSIGNED))
+        );
 
-        patch(orderId, "{ \"confirmBoot\": true }")
-                .isEqualTo(state(orderId, deviceId, BOOTED));
+        when(Actors.installer, "The location is assigned to the work order", () ->
+                patch(orderId, """
+                        {
+                          "assignLocation": {
+                            "street": "Rakietowa",
+                            "houseNumber": "1A",
+                            "city": "Wrocław",
+                            "postalCode": "54-621",
+                            "state": null,
+                            "country": "POL",
+                            "coordinates": {
+                              "longitude": 51.09836221719513,
+                              "latitude": 16.931752852309156
+                            }
+                          }
+                        }
+                        """)
+                        .isEqualTo(state(orderId, deviceId, DEVICE_ASSIGNED))
+        );
 
-        patch(orderId, "{ \"complete\": true }")
-                .isEqualTo(state(orderId, deviceId, COMPLETED));
+        when(Actors.device, "The device is booted", () ->
+                transactional(() -> service.handleBootNotification(
+                        Step.highlight("Boot notification", CommunicationFixture.boot(deviceId))))
+        );
+
+        then("The device is booted", () ->
+                get(orderId)
+                        .isEqualTo(state(orderId, deviceId, BOOTED))
+        );
+
+        when(Actors.installer, "The boot is confirmed", () ->
+                patch(orderId, "{ \"confirmBoot\": true }")
+                        .isEqualTo(state(orderId, deviceId, BOOTED))
+        );
+
+        when(Actors.installer, "The installation is completed", () ->
+                patch(orderId, "{ \"complete\": true }")
+                        .isEqualTo(state(orderId, deviceId, COMPLETED))
+        );
     }
 
     private ObjectAssert<InstallationProcessState> get(String orderId) {
