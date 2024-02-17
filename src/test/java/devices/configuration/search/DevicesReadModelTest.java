@@ -63,8 +63,8 @@ class DevicesReadModelTest {
                     "remoteControl": false,
                     "billing": false,
                     "reimbursement": false,
-                    "showOnMap": false,
-                    "publicAccess": false
+                    "showOnMap": true,
+                    "publicAccess": true
                   },
                   "violations": {
                     "operatorNotAssigned": false,
@@ -75,7 +75,7 @@ class DevicesReadModelTest {
                   },
                   "visibility": {
                     "roamingEnabled": true,
-                    "forCustomer": "USABLE_BUT_HIDDEN_ON_MAP"
+                    "forCustomer": "USABLE_AND_VISIBLE_ON_MAP"
                   } ,
                   "boot": {
                     "protocol": "IoT16",
@@ -143,13 +143,13 @@ class DevicesReadModelTest {
                   "totalPages": 1,
                   "totalElements": 1,
                   "page": 0,
-                  "size": 5
+                  "size": 1
                 }
                 """);
     }
 
     private DeviceConfiguration givenDevice() {
-        DeviceConfiguration device = DeviceFixture.givenDeviceConfiguration(deviceId);
+        DeviceConfiguration device = DeviceFixture.givenPublicDeviceConfiguration(deviceId);
 
         projection.projectionOf(device);
         projection.projectionOf(CommunicationFixture.boot(deviceId));

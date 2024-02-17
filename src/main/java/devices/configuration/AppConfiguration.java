@@ -24,7 +24,7 @@ class AppConfiguration {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests((auth) -> auth
-                        .antMatchers("/protocols/..").permitAll()
+                        .antMatchers("/protocols/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

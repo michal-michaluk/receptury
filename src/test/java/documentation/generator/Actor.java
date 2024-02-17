@@ -27,6 +27,6 @@ public record Actor(String name, Actor.Type type) {
 
     @Override
     public String toString() {
-        return Tools.stringify(this);
+        return Serialization.stringify(this);
     }
 }

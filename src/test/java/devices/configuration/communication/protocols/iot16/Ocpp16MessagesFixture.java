@@ -1,8 +1,10 @@
 package devices.configuration.communication.protocols.iot16;
 
+import devices.configuration.tools.JsonConfiguration;
+
 public class Ocpp16MessagesFixture {
 
-    public BootNotificationRequest bootNotification() {
+    public static BootNotificationRequest bootNotification() {
         return new BootNotificationRequest(
                 "Garo",
                 "CPF25 Family",
@@ -14,5 +16,9 @@ public class Ocpp16MessagesFixture {
                 "5051",
                 "937462A48276"
         );
+    }
+
+    public static String json() {
+        return JsonConfiguration.json(bootNotification());
     }
 }

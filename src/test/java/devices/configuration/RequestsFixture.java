@@ -1,12 +1,10 @@
 package devices.configuration;
 
-import devices.configuration.installations.InstallationProcessState;
-import devices.configuration.tools.JsonConfiguration;
 import io.netty.handler.logging.LogLevel;
+import org.intellij.lang.annotations.Language;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -27,7 +25,9 @@ public class RequestsFixture {
     private int port;
     private WebClient client;
     private String jwt = null;
+    public final Communication communication = new Communication();
     public final Installations installations = new Installations();
+    public final Devices devices = new Devices();
 
     @PostConstruct
     void setUp() {
@@ -48,32 +48,79 @@ public class RequestsFixture {
     }
 
     public class Installations {
-        public Iterable<InstallationProcessState> get(int page, int size) {
-            return client.get()
+        public JsonAssert get(int page, int size) {
+            return JsonAssert.assertThat(client.get()
                     .uri("/installations?page={page}&size={size}", page, size)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .accept(MediaType.APPLICATION_JSON)
-                    .retrieve().bodyToMono(
-                            new ParameterizedTypeReference<JsonConfiguration.SimplePage<InstallationProcessState>>() {}
-                    ).block();
+                    .retrieve().bodyToMono(String.class).block());
         }
 
-        public InstallationProcessState get(String orderId1) {
-            return client.get()
+        public JsonAssert get(String orderId1) {
+            return JsonAssert.assertThat(client.get()
                     .uri("/installations/{orderId}", orderId1)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .accept(MediaType.APPLICATION_JSON)
-                    .retrieve().bodyToMono(InstallationProcessState.class).block();
+                    .retrieve().bodyToMono(String.class).block());
         }
 
-        public InstallationProcessState patch(String orderId, Object body) {
-            return client.patch()
+        public JsonAssert patch(String orderId, @Language("JSON") String body, Object... bodyParams) {
+            return JsonAssert.assertThat(client.patch()
                     .uri("/installations/{orderId}", orderId)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(body.formatted(bodyParams)))
+                    .retrieve().bodyToMono(String.class).block());
+        }
+    }
+
+    public class Devices {
+        public JsonAssert get(int page, int size) {
+            return JsonAssert.assertThat(client.get()
+                    .uri("/devices?page={page}&size={size}", page, size)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(String.class).block());
+        }
+
+        public JsonAssert get(String orderId) {
+            return JsonAssert.assertThat(client.get()
+                    .uri("/devices/{orderId}", orderId)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(String.class).block());
+        }
+
+        public JsonAssert patch(String deviceId, @Language("JSON") String body) {
+            return JsonAssert.assertThat(client.patch()
+                    .uri("/devices/{deviceId}", deviceId)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(body))
-                    .retrieve().bodyToMono(InstallationProcessState.class).block();
+                    .retrieve().bodyToMono(String.class).block());
+        }
+    }
+
+    public class Communication {
+
+        public JsonAssert bootIot16(String deviceId, @Language("JSON") String body) {
+            return JsonAssert.assertThat(client.post()
+                    .uri("/protocols/iot16/bootnotification/{deviceId}", deviceId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(body))
+                    .retrieve().bodyToMono(String.class).block());
+        }
+
+        public JsonAssert bootIot20(String deviceId, @Language("JSON") String body) {
+            return JsonAssert.assertThat(client.post()
+                    .uri("/protocols/iot20/bootnotification/{deviceId}", deviceId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(body))
+                    .retrieve().bodyToMono(String.class).block());
         }
     }
 }

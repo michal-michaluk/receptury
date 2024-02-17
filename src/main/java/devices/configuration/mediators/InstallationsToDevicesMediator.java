@@ -5,6 +5,7 @@ import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 import devices.configuration.device.UpdateDevice;
 import devices.configuration.installations.Devices;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class InstallationsToDevicesMediator implements Devices {
 
     @Override
     @WithSpan
-    public void create(String deviceId, Ownership ownership, Location location) {
+    public void create(@SpanAttribute String deviceId, @SpanAttribute Ownership ownership, @SpanAttribute Location location) {
         devices.createNewDevice(
                 deviceId,
                 UpdateDevice.use(ownership, location)

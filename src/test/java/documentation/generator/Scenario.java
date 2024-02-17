@@ -49,6 +49,6 @@ public class Scenario {
 
     @Override
     public String toString() {
-        return Tools.stringify(this);
+        return Serialization.stringify(this);
     }
 }

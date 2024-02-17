@@ -1,6 +1,7 @@
 package devices.configuration.device;
 
 import devices.configuration.tools.EventTypes;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,7 @@ class DeviceDocumentWithHistoryRepository implements DeviceRepository {
 
     @Override
     @WithSpan
-    public Optional<Device> get(String deviceId) {
+    public Optional<Device> get(@SpanAttribute String deviceId) {
         return documents.findById(deviceId)
                 .map(DeviceDocumentEntity::getDevice);
     }

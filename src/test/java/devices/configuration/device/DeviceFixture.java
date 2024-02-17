@@ -41,7 +41,23 @@ public class DeviceFixture {
                 OpeningHours.alwaysOpened(),
                 Settings.defaultSettings(),
                 Violations.builder().build(),
-                Visibility.basedOn(true, false)
+                Visibility.basedOn(false, false)
+        );
+    }
+
+    @NotNull
+    public static DeviceConfiguration givenPublicDeviceConfiguration(String deviceId) {
+        return new DeviceConfiguration(
+                deviceId,
+                ownership(),
+                location(),
+                OpeningHours.alwaysOpened(),
+                Settings.defaultSettings().toBuilder()
+                        .publicAccess(true)
+                        .showOnMap(true)
+                        .build(),
+                Violations.builder().build(),
+                Visibility.basedOn(true, true)
         );
     }
 

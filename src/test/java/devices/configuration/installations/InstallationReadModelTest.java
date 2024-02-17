@@ -30,7 +30,7 @@ class InstallationReadModelTest {
 
     @BeforeEach
     void setUp() {
-        repo.deleteAll();
+        repo.truncate();
     }
 
     @Test
@@ -77,7 +77,7 @@ class InstallationReadModelTest {
                   ],
                   "totalPages": 1,
                   "totalElements": 3,
-                  "size": 5000,
+                  "size": 3,
                   "page": 0
                 }
                 """);

@@ -94,16 +94,16 @@ class InstallationProcess {
         events.add(event);
     }
 
+    void confirmBootData() {
+        if (bootConfirmation) return;
+        var event = new BootNotificationProcessed(orderId, deviceId, boot, true);
+        handle(event);
+        events.add(event);
+    }
+
     private void handle(BootNotificationProcessed event) {
         this.boot = event.boot();
         this.bootConfirmation = event.confirmed();
-    }
-
-    void confirmBootData() {
-        if (bootConfirmation) return;
-        this.bootConfirmation = true;
-        var event = new BootNotificationProcessed(orderId, deviceId, boot, bootConfirmation);
-        events.add(event);
     }
 
     CompletionResult complete() {

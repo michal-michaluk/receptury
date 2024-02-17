@@ -3,6 +3,7 @@ package devices.configuration;
 import devices.configuration.tools.JsonConfiguration;
 import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
+import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class JsonAssert {
@@ -17,49 +18,58 @@ public class JsonAssert {
         return new JsonAssert(json(object));
     }
 
-    public static JsonAssert assertThat(String json) {
+    public static JsonAssert assertThat(@Language("JSON") String json) {
         return new JsonAssert(json);
     }
 
     @SneakyThrows
     public JsonAssert isExactlyLike(Object object) {
-        JSONAssert.assertEquals(json(object), actual, true);
+        assertJson(json(object), actual, true);
         return this;
     }
 
     @SneakyThrows
     public JsonAssert isExactlyLike(@Language("JSON") String json) {
-        JSONAssert.assertEquals(json, actual, true);
+        assertJson(json, actual, true);
         return this;
     }
 
     @SneakyThrows
     public JsonAssert isExactlyLike(@Language("JSON") String json, Object... params) {
-        JSONAssert.assertEquals(json.formatted(params), actual, true);
+        assertJson(json.formatted(params), actual, true);
         return this;
     }
 
     @SneakyThrows
     public JsonAssert hasFieldsLike(Object object) {
-        JSONAssert.assertEquals(json(object), actual, false);
+        assertJson(json(object), actual, false);
         return this;
     }
 
     @SneakyThrows
     public JsonAssert hasFieldsLike(@Language("JSON") String json) {
-        JSONAssert.assertEquals(json, actual, false);
+        assertJson(json, actual, false);
         return this;
     }
 
     @SneakyThrows
     public JsonAssert hasFieldsLike(@Language("JSON") String json, Object... params) {
-        JSONAssert.assertEquals(json.formatted(params), actual, false);
+        assertJson(json.formatted(params), actual, false);
         return this;
     }
-
 
     @SneakyThrows
     public static String json(Object object) {
         return JsonConfiguration.OBJECT_MAPPER.writeValueAsString(object);
+    }
+
+    private static void assertJson(String expected, String actual, boolean strict) throws JSONException {
+        try {
+            JSONAssert.assertEquals(expected, actual, strict);
+        } catch (Throwable e) {
+            System.err.println("Actual:");
+            System.err.println(actual);
+            throw e;
+        }
     }
 }

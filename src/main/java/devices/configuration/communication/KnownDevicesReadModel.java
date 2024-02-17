@@ -3,6 +3,7 @@ package devices.configuration.communication;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.installations.DomainEvent.DeviceAssigned;
 import devices.configuration.installations.DomainEvent.InstallationCompleted;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,9 @@ class KnownDevicesReadModel implements KnownDevices {
     private final JpaRepository repository;
 
     @Override
+    @Transactional(readOnly = true)
     @WithSpan
-    public State queryDevice(String deviceId) {
+    public State queryDevice(@SpanAttribute String deviceId) {
         return repository.findById(deviceId)
                 .map(KnownDeviceEntity::state)
                 .orElse(State.UNKNOWN);
@@ -36,19 +38,19 @@ class KnownDevicesReadModel implements KnownDevices {
 
     @EventListener
     @WithSpan
-    public void projectionOfDeviceInstallation(DeviceAssigned event) {
+    public void projectionOfDeviceInstallation(@SpanAttribute DeviceAssigned event) {
         put(event.deviceId(), State.IN_INSTALLATION);
     }
 
     @EventListener
     @WithSpan
-    public void projectionOfInstallationCompleted(InstallationCompleted event) {
+    public void projectionOfInstallationCompleted(@SpanAttribute InstallationCompleted event) {
         put(event.deviceId(), State.EXISTING);
     }
 
     @EventListener
     @WithSpan
-    public void projectionOfDeInstallation(DeviceConfiguration event) {
+    public void projectionOfDeInstallation(@SpanAttribute DeviceConfiguration event) {
         if (event.ownership().isUnowned()) {
             put(event.deviceId(), State.UNKNOWN);
         }

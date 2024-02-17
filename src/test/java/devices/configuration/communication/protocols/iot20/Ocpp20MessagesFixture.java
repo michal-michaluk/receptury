@@ -1,8 +1,10 @@
 package devices.configuration.communication.protocols.iot20;
 
+import devices.configuration.tools.JsonConfiguration;
+
 public class Ocpp20MessagesFixture {
 
-    public BootNotificationRequest bootNotification() {
+    public static BootNotificationRequest bootNotification() {
         return new BootNotificationRequest(
                 new BootNotificationRequest.Device(
                         "820394A93203",
@@ -16,5 +18,9 @@ public class Ocpp20MessagesFixture {
                 ),
                 BootNotificationRequest.Reason.PowerUp
         );
+    }
+
+    public static String json() {
+        return JsonConfiguration.json(bootNotification());
     }
 }

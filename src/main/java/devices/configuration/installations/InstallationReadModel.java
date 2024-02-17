@@ -1,6 +1,7 @@
 package devices.configuration.installations;
 
 import devices.configuration.installations.InstallationProcessState.State;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -40,21 +42,23 @@ class InstallationReadModel {
         }
     }
 
+    @Transactional(readOnly = true)
     @WithSpan
-    public Optional<InstallationProcessState> queryByOrderId(String deviceId) {
+    public Optional<InstallationProcessState> queryByOrderId(@SpanAttribute String deviceId) {
         return repository.findById(deviceId)
                 .map(InstallationEntity::state);
     }
 
+    @Transactional(readOnly = true)
     @WithSpan
-    public Page<InstallationProcessState> query(QueryParams params, Pageable pageable) {
+    public Page<InstallationProcessState> query(@SpanAttribute QueryParams params, @SpanAttribute Pageable pageable) {
         return repository.findAllMatching(params.anyStatus(), params.states(), pageable)
                 .map(InstallationEntity::state);
     }
 
     @EventListener
     @WithSpan
-    public void projectionOf(InstallationProcessState snapshot) {
+    public void projectionOf(@SpanAttribute InstallationProcessState snapshot) {
         put(snapshot.orderId(), snapshot);
     }
 
@@ -80,6 +84,10 @@ class InstallationReadModel {
                 @Param("anyStatus") boolean anyStatus, @Param("states") List<State> states,
                 Pageable pageable
         );
+
+        @Modifying
+        @Query(value = "delete from installation where true", nativeQuery = true)
+        void truncate();
     }
 
     @Entity

@@ -12,6 +12,7 @@ import static java.util.List.copyOf;
 import static java.util.List.of;
 
 public class Step {
+
     enum Type {GIVEN, WHEN, THEN}
 
     private static AtomicInteger counter = new AtomicInteger(0);
@@ -26,22 +27,32 @@ public class Step {
         this.actors = actors;
     }
 
+    public static void ignoredInDocumented(Runnable implementation) {
+        Span.current().setAttribute("documenting.ignore", true);
+        implementation.run();
+    }
+
+    public static <T> T ignoredInDocumented(Supplier<T> implementation) {
+        Span.current().setAttribute("documenting.ignore", true);
+        return implementation.get();
+    }
+
     @WithSpan
     public static void given(@Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.GIVEN, step, of()));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
     public static <T> T given(@Language("Markdown") String step, Supplier<T> implementation) {
         attach(new Step(Type.GIVEN, step, of()));
-        return implementation.get();
+        return run(implementation);
     }
 
     @WithSpan
     public static void given(Actor actor, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.GIVEN, step, of(actor)));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -53,7 +64,7 @@ public class Step {
     @WithSpan
     public static void given(List<Actor> actors, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.GIVEN, step, actors));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -65,7 +76,7 @@ public class Step {
     @WithSpan
     public static void when(@Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.WHEN, step, of()));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -77,7 +88,7 @@ public class Step {
     @WithSpan
     public static void when(Actor actor, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.WHEN, step, of(actor)));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -89,7 +100,7 @@ public class Step {
     @WithSpan
     public static void when(List<Actor> actors, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.WHEN, step, copyOf(actors)));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -101,7 +112,7 @@ public class Step {
     @WithSpan
     public static void then(@Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.THEN, step, of()));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -113,7 +124,7 @@ public class Step {
     @WithSpan
     public static void then(Actor actor, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.THEN, step, of(actor)));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -125,7 +136,7 @@ public class Step {
     @WithSpan
     public static void then(List<Actor> actors, @Language("Markdown") String step, Runnable implementation) {
         attach(new Step(Type.THEN, step, copyOf(actors)));
-        implementation.run();
+        run(implementation);
     }
 
     @WithSpan
@@ -142,9 +153,14 @@ public class Step {
         );
         Span.current().setAttribute(
                 "documenting.scenario.highlight." + number + "data",
-                Tools.stringify(data)
+                Serialization.stringify(data)
         );
         return data;
+    }
+
+    @Override
+    public String toString() {
+        return Serialization.stringify(this);
     }
 
     private static void attach(Step step) {
@@ -153,8 +169,11 @@ public class Step {
                 .setAttribute("documenting.scenario.step", step.toString());
     }
 
-    @Override
-    public String toString() {
-        return Tools.stringify(this);
+    private static void run(Runnable implementation) {
+        implementation.run();
+    }
+
+    private static <T> T run(Supplier<T> implementation) {
+        return implementation.get();
     }
 }

@@ -8,8 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class Mermaid {
@@ -105,37 +108,58 @@ class Mermaid {
                         .sorted(Comparator.comparing(Call::start));
 
         @Builder
-        record DiagramParameters(String title, String axisFormat, Function<Span, String> scenarioTitle) {
+        record DiagramParameters(String title, String axisFormat) {
 
             public static DiagramParametersBuilder defaultParams() {
                 return builder()
-                        .title("Scenario Trace")
-                        .axisFormat("%sms")
-                        .scenarioTitle(Span::name);
-            }
-
-            String scenarioTitle(Scenarios.Scenario scenario) {
-                return scenario.root().name();
+                        .title(null)
+                        .axisFormat("%sms");
             }
         }
 
         @Override
         public void print(PrintWriter out) {
             out.println("gantt");
-            out.println("  title " + diagramParameters.title());
+            if (diagramParameters.title() != null) {
+                out.println("  title " + diagramParameters.title);
+            }
             out.println("  dateFormat X");
             out.println("  axisFormat " + diagramParameters.axisFormat());
             perspective.scenarios().scenarios().forEach(scenario -> {
-                        out.println("  section " + diagramParameters.scenarioTitle(scenario));
-                        Instant start = scenario.root().start();
-
-                        perspective.calls().stream()
-                                .map(call -> "    " + call.childParticipant() + " " + call.callName() + ": "
-                                             + fromStart(start, call.start()) + ", " + fromStart(start, call.end())
-                                )
-                                .forEach(out::println);
+                Instant start = scenario.root().start();
+                Instant max = Instant.ofEpochMilli(perspective.calls().stream()
+                        .skip(1)
+                        .mapToLong(call -> call.end().toEpochMilli() - call.start().toEpochMilli())
+                        .max()
+                        .orElse(start.toEpochMilli()));
+                for (Call call : perspective.calls()) {
+                    if (call.child().attribute("documenting.scenario").isPresent()) {
+//                        start = call.start();
+//                        out.println("    " + call.child().name() + ": "
+//                                    + fromStart(start, call.start()) + ", " + fromStart(start, max));
+                    } else if (call.child().attribute("documenting.scenario.step").isPresent()) {
+                        start = call.start();
+                        out.println("  section " + call.child().name());// + "\n" + highlights(call.child().attributes());
+                    } else {
+                        out.println("    " + call.childParticipant() + " " + call.callName() + ": "
+                                    + fromStart(start, call.start()) + ", " + fromStart(start, call.end()));
                     }
-            );
+                }
+            });
+
+        }
+
+        private String highlights(Map<String, Object> attributes) {
+            Pattern pattern = Pattern.compile("^documenting\\.scenario\\.highlight\\.(\\d)*\\..*");
+            return attributes.keySet().stream()
+                    .map(pattern::matcher)
+                    .filter(Matcher::find)
+                    .map(matcher -> matcher.toMatchResult().group(1))
+                    .mapToLong(Long::parseLong)
+                    .sorted()
+                    .mapToObj(index -> attributes.get("documenting.scenario.highlight." + index + ".information") + "\n" +
+                                       attributes.get("documenting.scenario.highlight." + index + ".data"))
+                    .collect(Collectors.joining("\n"));
         }
 
         private long fromStart(Instant start, Instant call) {

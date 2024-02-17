@@ -1,6 +1,7 @@
 package devices.configuration.communication;
 
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,7 +23,7 @@ public class CommunicationService {
     private final ApplicationEventPublisher publisher;
 
     @WithSpan
-    public BootResponse handleBoot(BootNotification boot) {
+    public BootResponse handleBoot(@SpanAttribute BootNotification boot) {
         BootResponse response = new BootResponse(
                 Instant.now(clock),
                 intervals.heartbeatIntervalFor(boot),

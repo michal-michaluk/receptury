@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
-import static devices.configuration.device.DeviceFixture.givenDeviceConfiguration;
+import static devices.configuration.device.DeviceFixture.givenPublicDeviceConfiguration;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -36,7 +36,7 @@ class DeviceReadsControllerTest {
     void findById() throws Exception {
         Mockito.when(projection.queryDetails(eq("device-id")))
                 .thenReturn(Optional.of(new DeviceDetails(
-                        givenDeviceConfiguration("device-id"),
+                        givenPublicDeviceConfiguration("device-id"),
                         CommunicationFixture.boot("device-id")
                 )));
 
@@ -71,8 +71,8 @@ class DeviceReadsControllerTest {
                             "remoteControl": false,
                             "billing": false,
                             "reimbursement": false,
-                            "showOnMap": false,
-                            "publicAccess": false
+                            "showOnMap": true,
+                            "publicAccess": true
                           },
                           "violations": {
                             "operatorNotAssigned": false,
@@ -83,7 +83,7 @@ class DeviceReadsControllerTest {
                           },
                           "visibility": {
                             "roamingEnabled": true,
-                            "forCustomer": "USABLE_BUT_HIDDEN_ON_MAP"
+                            "forCustomer": "USABLE_AND_VISIBLE_ON_MAP"
                           },
                           "boot": {
                             "protocol": "IoT16",
@@ -136,7 +136,7 @@ class DeviceReadsControllerTest {
                           ],
                           "totalPages": 1,
                           "totalElements": 1,
-                          "size": 2,
+                          "size": 1,
                           "page": 0
                         }
                         """, true));

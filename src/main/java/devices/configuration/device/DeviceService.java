@@ -1,5 +1,6 @@
 package devices.configuration.device;
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,13 @@ public class DeviceService {
 
     @WithSpan
     @Transactional(readOnly = true)
-    public Optional<DeviceConfiguration> getDevice(String deviceId) {
+    public Optional<DeviceConfiguration> getDevice(@SpanAttribute String deviceId) {
         return repository.get(deviceId)
                 .map(Device::toDeviceConfiguration);
     }
 
     @WithSpan
-    public DeviceConfiguration createNewDevice(String deviceId, UpdateDevice update) {
+    public DeviceConfiguration createNewDevice(@SpanAttribute String deviceId, @SpanAttribute UpdateDevice update) {
         Device device = Device.newDevice(deviceId);
         update.apply(device);
         repository.save(device);
@@ -30,7 +31,7 @@ public class DeviceService {
     }
 
     @WithSpan
-    public Optional<DeviceConfiguration> updateDevice(String deviceId, UpdateDevice update) {
+    public Optional<DeviceConfiguration> updateDevice(@SpanAttribute String deviceId, UpdateDevice update) {
         return repository.get(deviceId)
                 .map(device -> {
                     update.apply(device);

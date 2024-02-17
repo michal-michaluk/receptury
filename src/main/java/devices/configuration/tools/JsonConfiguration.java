@@ -131,7 +131,7 @@ public class JsonConfiguration implements ObjectMapperSupplier {
             jsonGenerator.writeNumberField("totalPages", page.getTotalPages());
             jsonGenerator.writeNumberField("totalElements", page.getTotalElements());
             jsonGenerator.writeNumberField("page", page.getNumber());
-            jsonGenerator.writeNumberField("size", page.getSize());
+            jsonGenerator.writeNumberField("size", page.getNumberOfElements());
             jsonGenerator.writeEndObject();
         }
     }

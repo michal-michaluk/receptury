@@ -3,6 +3,7 @@ package devices.configuration.mediators;
 import devices.configuration.communication.KnownDevices;
 import devices.configuration.device.DeviceService;
 import devices.configuration.installations.InstallationService;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ class ProtocolsToDevicesAndInstallationsMediator implements KnownDevices {
 
     @Override
     @WithSpan
-    public State queryDevice(String deviceId) {
+    public State queryDevice(@SpanAttribute String deviceId) {
         if (devices.getDevice(deviceId).isPresent()) {
             return State.EXISTING;
         }
