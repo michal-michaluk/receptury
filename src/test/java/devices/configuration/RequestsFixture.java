@@ -92,34 +92,34 @@ public class RequestsFixture {
                     .retrieve().bodyToMono(String.class).block());
         }
 
-        public JsonAssert patch(String deviceId, @Language("JSON") String body) {
+        public JsonAssert patch(String deviceId, @Language("JSON") String body, Object... bodyParams) {
             return JsonAssert.assertThat(client.patch()
                     .uri("/devices/{deviceId}", deviceId)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(body))
+                    .body(BodyInserters.fromValue(body.formatted(bodyParams)))
                     .retrieve().bodyToMono(String.class).block());
         }
     }
 
     public class Communication {
 
-        public JsonAssert bootIot16(String deviceId, @Language("JSON") String body) {
+        public JsonAssert bootIot16(String deviceId, @Language("JSON") String body, Object... bodyParams) {
             return JsonAssert.assertThat(client.post()
                     .uri("/protocols/iot16/bootnotification/{deviceId}", deviceId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(body))
+                    .body(BodyInserters.fromValue(body.formatted(bodyParams)))
                     .retrieve().bodyToMono(String.class).block());
         }
 
-        public JsonAssert bootIot20(String deviceId, @Language("JSON") String body) {
+        public JsonAssert bootIot20(String deviceId, @Language("JSON") String body, Object... bodyParams) {
             return JsonAssert.assertThat(client.post()
                     .uri("/protocols/iot20/bootnotification/{deviceId}", deviceId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(body))
+                    .body(BodyInserters.fromValue(body.formatted(bodyParams)))
                     .retrieve().bodyToMono(String.class).block());
         }
     }

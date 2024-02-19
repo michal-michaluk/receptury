@@ -1,5 +1,7 @@
 package documentation.generator;
 
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import devices.configuration.AppRunner;
 import devices.configuration.IntegrationTest;
 import devices.configuration.RequestsFixture;
@@ -30,6 +32,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static com.tngtech.archunit.base.DescribedPredicate.or;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleNameEndingWith;
+import static com.tngtech.archunit.core.domain.JavaCodeUnit.Predicates.method;
+import static com.tngtech.archunit.core.domain.JavaMember.Predicates.declaredIn;
 import static devices.configuration.TestTransaction.transactional;
 import static devices.configuration.installations.InstallationFixture.givenWorkOrderFor;
 import static documentation.generator.Step.then;
@@ -85,6 +92,17 @@ class FullScenarioProcessingTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
+        new OtelInstrumentationMethodsInclude(
+                new ClassFileImporter()
+                        .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                        .importPackages("devices.configuration"),
+                method().and(declaredIn(
+                        resideInAPackage("devices.configuration..").and(or(
+                                simpleNameEndingWith("Service"),
+                                simpleNameEndingWith("ReadModel")))
+                ))
+        ).setSystemProperty();
+        System.out.println(String.join("\n", System.getProperty("otel.instrumentation.methods.include").split(";")));
         var ret = collectorToTempDirectory();
         collector = ret.collector();
         traces = ret.tracesDirectory();
@@ -321,13 +339,13 @@ class FullScenarioProcessingTest {
         String orderId = "order-" + randomAlphanumeric(4);
         String deviceId = "device-" + randomAlphanumeric(4);
         transactional(() -> service.handleWorkOrder(givenWorkOrderFor(orderId, DeviceFixture.ownership())));
-        String body = "{ \"assignDevice\": \"%s\" }".formatted(deviceId);
-        http.installations.patch(orderId, body);
+        http.installations.patch(orderId, """
+                { "assignDevice": "%s" }""", deviceId);
         http.installations.get(0, 10000);
         installationsToDevicesMediator.create(
                 deviceId, DeviceFixture.ownership(), DeviceFixture.location()
         );
-        protocolsToIntervalsMediator.heartbeatIntervalFor(CommunicationFixture.boot().build());
+        protocolsToIntervalsMediator.heartbeatIntervalFor(CommunicationFixture.boot(deviceId));
         http.devices.get(deviceId);
     }
 
@@ -366,9 +384,9 @@ class FullScenarioProcessingTest {
                 .scenarioPredicate(scenarioPredicate)
                 .include(span -> true)
                 .exclude(span -> false)
-                .exclude(span -> span.name().contains("Controller.") || span.name().contains("Mediator.")
-                                 || Set.of("http", "Repository").contains(participantName.apply(span))
-                )
+//                .exclude(span -> span.name().contains("Controller.") || span.name().contains("Mediator.")
+//                                 || Set.of("http", "Repository").contains(participantName.apply(span))
+//                )
                 .callName(span -> span.attribute("code.function").orElseGet(span::name))
                 .argumentsFilter(span -> span.attributes(Set.of("order", "event", "snapshot", "state", "body")))
                 .participantName(participantName)
