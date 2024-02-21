@@ -51,6 +51,11 @@ record Span(
                 .filter(entry -> filter.contains(entry.getKey()));
     }
 
+    Stream<Map.Entry<String, Object>> attributesWithPrefix(String prefix) {
+        return attributes.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(prefix));
+    }
+
     Optional<String> attribute(String attribute) {
         return Optional.ofNullable((String) attributes.get(attribute));
     }

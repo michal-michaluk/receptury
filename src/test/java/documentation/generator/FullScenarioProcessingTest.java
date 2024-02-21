@@ -1,5 +1,6 @@
 package documentation.generator;
 
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import devices.configuration.AppRunner;
@@ -13,6 +14,7 @@ import devices.configuration.installations.InstallationService;
 import devices.configuration.mediators.InstallationsToDevicesMediator;
 import devices.configuration.mediators.ProtocolsToIntervalsMediator;
 import documentation.generator.Mermaid.SequenceDiagram.DiagramParameters;
+import documentation.generator.Textual.VerboseScenario;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
@@ -28,15 +30,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.base.DescribedPredicate.or;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleNameEndingWith;
 import static com.tngtech.archunit.core.domain.JavaCodeUnit.Predicates.method;
 import static com.tngtech.archunit.core.domain.JavaMember.Predicates.declaredIn;
+import static com.tngtech.archunit.core.domain.properties.HasModifiers.Predicates.modifier;
 import static devices.configuration.TestTransaction.transactional;
 import static devices.configuration.installations.InstallationFixture.givenWorkOrderFor;
 import static documentation.generator.Step.then;
@@ -66,22 +69,6 @@ class FullScenarioProcessingTest {
 
     final String deviceId = "device-" + randomAlphanumeric(4);
 
-    static void generateDocumentation() throws IOException {
-        Stream<Path> source = Files.list(traces);
-        TelemetrySpans telemetry = TelemetrySources.fromProtoFiles(source);
-        List<PerspectiveParameters> perspectives = List.of(exampleParameters());
-        perspectives.forEach(parameters -> {
-            Scenarios scenarios = telemetry.selectScenarios(parameters);
-            Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
-            Printable sequenceDiagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
-            Sink.toFile(Paths.get("src/docs/installation-sequence.mmd"))
-                    .accept(sequenceDiagram);
-            Printable gantt = new Mermaid.Gantt(perspective, parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build());
-            Sink.toFile(Paths.get("src/docs/installation-trace.mmd"))
-                    .accept(gantt);
-        });
-    }
-
     @BeforeEach
     void setUp() {
         http.clearJwt();
@@ -96,13 +83,12 @@ class FullScenarioProcessingTest {
                 new ClassFileImporter()
                         .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                         .importPackages("devices.configuration"),
-                method().and(declaredIn(
+                method().and(not(modifier(JavaModifier.PRIVATE))).and(declaredIn(
                         resideInAPackage("devices.configuration..").and(or(
                                 simpleNameEndingWith("Service"),
                                 simpleNameEndingWith("ReadModel")))
                 ))
-        ).setSystemProperty();
-        System.out.println(String.join("\n", System.getProperty("otel.instrumentation.methods.include").split(";")));
+        ).toPropertyFile(Path.of("src/docs/.otel.properties"));
         var ret = collectorToTempDirectory();
         collector = ret.collector();
         traces = ret.tracesDirectory();
@@ -115,7 +101,68 @@ class FullScenarioProcessingTest {
         generateDocumentation();
     }
 
-    public class Actors {
+    static void generateDocumentation() throws IOException {
+        Stream<Path> source = Files.list(traces);
+        TelemetrySpans telemetry = TelemetrySources.fromProtoFiles(source);
+        List<PerspectiveParameters> perspectives = List.of(exampleParameters());
+        perspectives.forEach(parameters -> {
+            Scenarios scenarios = telemetry.selectScenarios(parameters);
+            Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
+            Printable sequenceDiagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
+            Sink.toFile(Paths.get("src/docs/installation-sequence.mmd"))
+                    .accept(sequenceDiagram);
+            Printable gantt = new Mermaid.Gantt(perspective, parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build());
+            Sink.toFile(Paths.get("src/docs/installation-trace.mmd"))
+                    .accept(gantt);
+            Printable scenario = new VerboseScenario(perspective, parameters);
+            Sink.toFile(Paths.get("src/docs/scenario.txt"))
+                    .accept(scenario);
+        });
+    }
+
+    @NotNull
+    static PerspectiveParameters exampleParameters() {
+        String packagePrefix = "devices.configuration.";
+        Predicate<Span> scenarioPredicate = span -> span.attribute("documenting.scenario").isPresent();
+        // fucked up spans:
+        // name: Session\..*
+        // name: Transaction\..*
+        // name: .*Controller\..*
+        return PerspectiveParameters.builder()
+                .scenarioPredicate(scenarioPredicate)
+                .include(span -> true)
+//                .exclude(span -> false)
+                .exclude(span -> span.attribute("code.namespace").isEmpty() ||
+                                 span.attribute("code.namespace").filter(s -> s.contains("$")).isPresent())
+//                .exclude(span -> span.name().contains("Controller.") || span.name().contains("Mediator.")
+//                                 || Set.of("http", "Repository").contains(participantName.apply(span))
+//                )
+                .argumentsFilter(span -> span.attributes(Set.of("order", "event", "snapshot", "state", "body")))
+                .callName(span -> span.attribute("code.function").orElseGet(span::name))
+                .participantName(span -> span.attribute("code.namespace")
+                        .map(namespace -> namespace.substring(namespace.lastIndexOf('.') + 1))
+                        .orElseGet(span::name))
+                .participantGroup(span -> span.attribute("code.namespace")
+                        .map(namespace -> namespace.substring(packagePrefix.length(), namespace.lastIndexOf('.')))
+                        .orElseGet(span::name)
+                )
+                .build();
+    }
+
+    private static DiagramParameters exampleDiagramParameters() {
+        return DiagramParameters.builder()
+                .participantsGroupsOrder(List.of(
+                        "web",
+                        "installations",
+                        "mediators",
+                        "device",
+                        "communication",
+                        "search",
+                        "persistence"))
+                .build();
+    }
+
+    public static class Actors {
         public static final Actor salesSystem = Actor.system("Sales System");
         public static final Actor device = Actor.device("Device");
         public static final Actor installer = Actor.userRole("Installer");
@@ -141,13 +188,14 @@ class FullScenarioProcessingTest {
 
         String orderId = "order-" + randomAlphanumeric(4);
 
-        when(Actors.salesSystem, "A work order arrives", () ->
-                transactional(() -> service.handleWorkOrder(
-                        givenWorkOrderFor(orderId, DeviceFixture.ownership())
-                ))
-        );
+        when(Actors.salesSystem, "A work order arrives", () -> {
+            Step.highlight("A work order ownership", DeviceFixture.ownership());
+            transactional(() -> service.handleWorkOrder(
+                    givenWorkOrderFor(orderId, DeviceFixture.ownership())
+            ));
+        });
 
-        then("The work order is pending", () -> {
+        then(Actors.installer, "The work order is pending", () -> {
             http.installations.get(0, 10000).isExactlyLike("""
                     {
                       "content": [
@@ -347,72 +395,5 @@ class FullScenarioProcessingTest {
         );
         protocolsToIntervalsMediator.heartbeatIntervalFor(CommunicationFixture.boot(deviceId));
         http.devices.get(deviceId);
-    }
-
-    @NotNull
-    static PerspectiveParameters exampleParameters() {
-        String packagePrefix = "devices.configuration.";
-        Predicate<Span> scenarioPredicate = span -> span.attribute("documenting.scenario").isPresent();
-        Function<Span, String> participantName = span ->
-                span.anyOfAttributes(Set.of("code.namespace", "db.statement", "http.route"))
-                        .map(attribute -> switch (attribute.getKey()) {
-                            case "code.namespace" -> {
-                                String fullQualifiedClassName = attribute.getValue().toString();
-                                if (fullQualifiedClassName.endsWith("Repository")) {
-                                    yield "Repository";
-                                } else {
-                                    yield fullQualifiedClassName
-                                            .substring(fullQualifiedClassName.lastIndexOf('.') + 1);
-                                }
-                            }
-                            case "db.statement" -> "Repository";
-                            case "http.route" -> "http";
-                            default -> span.name();
-                        }).orElseGet(() -> switch (span.name()) {
-                            case "INSERT", "UPDATE", "SELECT", "DELETE" -> "Repository";
-                            case "GET", "PUT", "POST", "PATCH" -> "http"; // "DELETE" is ambiguous
-                            case String name &&name.startsWith("Session.") ->"Repository";
-                            case String name &&name.startsWith("Transaction.") ->"Repository";
-                            case String name &&name.startsWith("SELECT ") ->"Repository";
-                            case String name &&name.startsWith("INSERT ") ->"Repository";
-                            case String name &&name.startsWith("UPDATE ") ->"Repository";
-                            case String name &&name.startsWith("DELETE ") ->"Repository";
-                                default -> span.name();
-                        });
-
-        return PerspectiveParameters.builder()
-                .scenarioPredicate(scenarioPredicate)
-                .include(span -> true)
-                .exclude(span -> false)
-//                .exclude(span -> span.name().contains("Controller.") || span.name().contains("Mediator.")
-//                                 || Set.of("http", "Repository").contains(participantName.apply(span))
-//                )
-                .callName(span -> span.attribute("code.function").orElseGet(span::name))
-                .argumentsFilter(span -> span.attributes(Set.of("order", "event", "snapshot", "state", "body")))
-                .participantName(participantName)
-                .participantGroup(span -> switch (participantName.apply(span)) {
-                    case "Repository" -> "persistence";
-                    case "http" -> "web";
-                    case String name &&span.attribute("code.namespace")
-                            .filter(namespace -> namespace.startsWith(packagePrefix)).isPresent() ->
-                        span.attribute("code.namespace")
-                                .map(namespace -> namespace.substring(packagePrefix.length(), namespace.lastIndexOf('.')))
-                                .orElseThrow();
-                        default -> participantName.apply(span);
-                })
-                .build();
-    }
-
-    private static DiagramParameters exampleDiagramParameters() {
-        return DiagramParameters.builder()
-                .participantsGroupsOrder(List.of(
-                        "web",
-                        "installations",
-                        "mediators",
-                        "device",
-                        "communication",
-                        "search",
-                        "persistence"))
-                .build();
     }
 }

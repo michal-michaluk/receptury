@@ -2,8 +2,6 @@ package devices.configuration.installations;
 
 import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -18,29 +16,25 @@ public class InstallationService {
     private final Devices devices;
 
     @EventListener
-    @WithSpan
-    public void handleWorkOrder(@SpanAttribute WorkOrder order) {
+    public void handleWorkOrder(WorkOrder order) {
         InstallationProcess process = InstallationProcess.startInstallationProcessFor(order);
         repository.save(process);
     }
 
-    @WithSpan
-    void assignDevice(@SpanAttribute String orderId, @SpanAttribute String deviceId) {
+    void assignDevice(String orderId, String deviceId) {
         InstallationProcess process = repository.getByOrderId(orderId);
         process.assignDevice(deviceId);
         repository.save(process);
     }
 
-    @WithSpan
-    void assignLocation(@SpanAttribute String orderId, @SpanAttribute Location location) {
+    void assignLocation(String orderId, Location location) {
         InstallationProcess process = repository.getByOrderId(orderId);
         process.assignLocation(location);
         repository.save(process);
     }
 
     @EventListener
-    @WithSpan
-    public void handleBootNotification(@SpanAttribute BootNotification boot) {
+    public void handleBootNotification(BootNotification boot) {
         repository.getByDeviceId(boot.deviceId())
                 .ifPresent(process -> {
                     process.handleBootNotification(boot);
@@ -48,15 +42,13 @@ public class InstallationService {
                 });
     }
 
-    @WithSpan
-    void confirmBootData(@SpanAttribute String orderId) {
+    void confirmBootData(String orderId) {
         InstallationProcess process = repository.getByOrderId(orderId);
         process.confirmBootData();
         repository.save(process);
     }
 
-    @WithSpan
-    CompletionResult complete(@SpanAttribute String orderId) {
+    CompletionResult complete(String orderId) {
         InstallationProcess process = repository.getByOrderId(orderId);
         CompletionResult result = process.complete();
         repository.save(process);

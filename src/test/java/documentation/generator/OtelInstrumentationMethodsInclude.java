@@ -9,9 +9,12 @@ import com.tngtech.archunit.lang.AbstractClassesTransformer;
 import com.tngtech.archunit.thirdparty.com.google.common.collect.ImmutableSet;
 import lombok.RequiredArgsConstructor;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -22,7 +25,7 @@ public class OtelInstrumentationMethodsInclude {
     private final JavaClasses importedClasses;
     private final DescribedPredicate<JavaCodeUnit> predicate;
 
-    public void printInclude(PrintStream out) {
+    public void printInclude(PrintWriter out) {
         AbstractClassesTransformer<JavaMethod> transformer = new AbstractClassesTransformer<>("methods") {
             @Override
             public Iterable<JavaMethod> doTransform(JavaClasses collection) {
@@ -51,7 +54,7 @@ public class OtelInstrumentationMethodsInclude {
 
     public String includeString() {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream();
-             PrintStream stream = new PrintStream(output)) {
+             PrintWriter stream = new PrintWriter(output)) {
 
             this.printInclude(stream);
             return output.toString();
@@ -62,5 +65,22 @@ public class OtelInstrumentationMethodsInclude {
 
     public void setSystemProperty() {
         System.setProperty("otel.instrumentation.methods.include", includeString());
+    }
+
+    public void toPropertyFile(Path path) {
+        try {
+            Files.deleteIfExists(path);
+            Files.createFile(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(path);
+             PrintWriter out = new PrintWriter(writer)) {
+            out.print("otel.instrumentation.methods.include = ");
+            this.printInclude(out);
+            out.println();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

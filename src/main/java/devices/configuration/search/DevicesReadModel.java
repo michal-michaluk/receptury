@@ -4,8 +4,6 @@ import devices.configuration.communication.BootNotification;
 import devices.configuration.communication.DeviceStatuses;
 import devices.configuration.device.DeviceConfiguration;
 import devices.configuration.device.Ownership;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,8 +31,7 @@ class DevicesReadModel {
     private final DeviceReadsRepository repository;
 
     @EventListener
-    @WithSpan
-    public void projectionOf(@SpanAttribute DeviceConfiguration details) {
+    public void projectionOf(DeviceConfiguration details) {
         DeviceReadsEntity entity = repository.findById(details.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(details.deviceId()));
 
@@ -48,8 +45,7 @@ class DevicesReadModel {
     }
 
     @EventListener
-    @WithSpan
-    public void projectionOf(@SpanAttribute BootNotification boot) {
+    public void projectionOf(BootNotification boot) {
         DeviceReadsEntity entity = repository.findById(boot.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(boot.deviceId()));
 
@@ -59,8 +55,7 @@ class DevicesReadModel {
     }
 
     @EventListener
-    @WithSpan
-    public void projectionOf(@SpanAttribute DeviceStatuses statuses) {
+    public void projectionOf(DeviceStatuses statuses) {
         DeviceReadsEntity entity = repository.findById(statuses.deviceId())
                 .orElseGet(() -> new DeviceReadsEntity(statuses.deviceId()));
 
@@ -73,23 +68,20 @@ class DevicesReadModel {
     }
 
     @Transactional(readOnly = true)
-    @WithSpan
-    public Optional<DeviceDetails> queryDetails(@SpanAttribute String deviceId) {
+    public Optional<DeviceDetails> queryDetails(String deviceId) {
         return repository.findById(deviceId)
                 .map(entity -> new DeviceDetails(entity.details, entity.boot));
     }
 
     @Transactional(readOnly = true)
-    @WithSpan
-    public List<DevicePin> queryPins(@SpanAttribute String provider) {
+    public List<DevicePin> queryPins(String provider) {
         return repository.findAllByProvider(provider)
                 .map(DeviceReadsEntity::getPin)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    @WithSpan
-    public Page<DeviceSummary> querySummary(@SpanAttribute String provider, Pageable pageable) {
+    public Page<DeviceSummary> querySummary(String provider, Pageable pageable) {
         return repository.findAllByProvider(provider, pageable)
                 .map(DeviceReadsEntity::getSummary);
     }

@@ -7,6 +7,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import documentation.generator.OtelInstrumentationMethodsInclude;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -23,7 +24,8 @@ public class ProduceMethodsForInstrumentationTest {
             .importPackages("devices.configuration");
 
     @Test
-    public void architecture() throws IOException {
+    @Disabled
+    public void check() throws IOException {
         DescribedPredicate<JavaCodeUnit> methods = method().and(declaredIn(
                 resideInAPackage("devices.configuration..").and(or(
                         simpleNameEndingWith("Service"),

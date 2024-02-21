@@ -1,8 +1,6 @@
 package devices.configuration.installations;
 
 import devices.configuration.installations.InstallationProcessState.State;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -43,22 +41,19 @@ class InstallationReadModel {
     }
 
     @Transactional(readOnly = true)
-    @WithSpan
-    public Optional<InstallationProcessState> queryByOrderId(@SpanAttribute String deviceId) {
+    public Optional<InstallationProcessState> queryByOrderId(String deviceId) {
         return repository.findById(deviceId)
                 .map(InstallationEntity::state);
     }
 
     @Transactional(readOnly = true)
-    @WithSpan
-    public Page<InstallationProcessState> query(@SpanAttribute QueryParams params, @SpanAttribute Pageable pageable) {
+    public Page<InstallationProcessState> query(QueryParams params, Pageable pageable) {
         return repository.findAllMatching(params.anyStatus(), params.states(), pageable)
                 .map(InstallationEntity::state);
     }
 
     @EventListener
-    @WithSpan
-    public void projectionOf(@SpanAttribute InstallationProcessState snapshot) {
+    public void projectionOf(InstallationProcessState snapshot) {
         put(snapshot.orderId(), snapshot);
     }
 

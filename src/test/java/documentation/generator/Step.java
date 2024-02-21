@@ -15,8 +15,6 @@ public class Step {
 
     enum Type {GIVEN, WHEN, THEN}
 
-    private static AtomicInteger counter = new AtomicInteger(0);
-
     private final String step;
     private final Type type;
     private final List<Actor> actors;
@@ -145,16 +143,14 @@ public class Step {
         return implementation.get();
     }
 
+    private static AtomicInteger counter = new AtomicInteger(0);
+
     public static <T> T highlight(@Language("Markdown") String information, T data) {
         int number = counter.getAndIncrement();
-        Span.current().setAttribute(
-                "documenting.scenario.highlight." + number + "information",
-                information
-        );
-        Span.current().setAttribute(
-                "documenting.scenario.highlight." + number + "data",
-                Serialization.stringify(data)
-        );
+        var keys = Convention.highlight(number);
+        Span current = Span.current();
+        current.setAttribute(keys.information(), information);
+        current.setAttribute(keys.data(), Serialization.stringify(data));
         return data;
     }
 
@@ -166,7 +162,7 @@ public class Step {
     private static void attach(Step step) {
         Span.current()
                 .updateName(step.step)
-                .setAttribute("documenting.scenario.step", step.toString());
+                .setAttribute(Convention.DOCUMENTING_SCENARIO_STEP, step.toString());
     }
 
     private static void run(Runnable implementation) {

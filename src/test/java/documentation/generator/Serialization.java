@@ -36,4 +36,11 @@ class Serialization {
     }
 
 
+    public static <T> T fromString(String string, Class<T> type) {
+        try {
+            return OBJECT_MAPPER.readValue(string, type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

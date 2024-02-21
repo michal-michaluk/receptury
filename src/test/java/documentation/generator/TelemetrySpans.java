@@ -9,11 +9,13 @@ import org.jgrapht.traverse.DepthFirstIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 record TelemetrySpans(Map<ByteString, Span> spans,
                       Graph<Object, DefaultEdge> graph) {
+
     Span span(Object spanId) {
         return spans.get(spanId);
     }
@@ -27,7 +29,7 @@ record TelemetrySpans(Map<ByteString, Span> spans,
                 .select(parameters.scenarioPredicate())
                 .map(scenario -> {
                     var subGraph = scenarioSubGraph(scenario, parameters);
-                    return new Scenarios.Scenario(scenario, new Scenarios.Description(), subGraph);
+                    return new Scenarios.Scenario(scenario, description(scenario), subGraph);
                 }).toList();
 
         return new Scenarios(list);
@@ -44,5 +46,19 @@ record TelemetrySpans(Map<ByteString, Span> spans,
             }
         });
         return scenarioSubGraph;
+    }
+
+    private Scenarios.Description description(Span root) {
+        documentation.generator.Scenario scenario = root.attribute(Convention.DOCUMENTING_SCENARIO)
+                .map(value -> Serialization.fromString(value, documentation.generator.Scenario.class))
+                .orElseGet(() -> Scenario.title(root.name()));
+        List<Scenarios.StepDescription> steps = graph.outgoingEdgesOf(root.spanId()).stream()
+                .map(graph::getEdgeTarget)
+                .map(this::span)
+                .filter(Objects::nonNull)
+                .filter(span -> span.attribute(Convention.DOCUMENTING_SCENARIO_STEP).isPresent())
+                .map(Convention::createStepDescription)
+                .toList();
+        return new Scenarios.Description(scenario, steps);
     }
 }

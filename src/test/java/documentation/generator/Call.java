@@ -65,7 +65,7 @@ record Call(
         return "call:" +
                "\n from: " + parentParticipant +
                "\n to: " + childParticipant +
-               "\n call'" + callName + " " + variant +
+               "\n call: " + callName +
                "\n start: " + child.start() +
                "\n end: " + child.end();
     }

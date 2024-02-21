@@ -79,6 +79,7 @@ test {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=ddd-devices")
     environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_LOGS_EXPORTER", "none")
+    environment("OTEL_JAVAAGENT_CONFIGURATION_FILE", "src/docs/.otel.properties")
 }
 
 static defaultSetup(CompileOptions options) {

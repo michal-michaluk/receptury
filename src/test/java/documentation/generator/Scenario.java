@@ -22,7 +22,7 @@ public class Scenario {
     }
 
     public Scenario description(@Language("Markdown") String description) {
-        this.title = description;
+        this.description = description;
         return this;
     }
 
@@ -44,7 +44,7 @@ public class Scenario {
     public void begin() {
         current()
                 .updateName(title)
-                .setAttribute("documenting.scenario", toString());
+                .setAttribute(Convention.DOCUMENTING_SCENARIO, toString());
     }
 
     @Override

@@ -24,14 +24,14 @@ class Mermaid {
 
         SequenceDiagram(Perspective perspective, PerspectiveParameters parameters, DiagramParameters diagramParameters) {
             this.perspective = perspective.transform(
-                    requiredPerspectiveModifier,
+                    addReturningCallsAndResort,
                     participants -> participants
             );
             this.parameters = parameters;
             this.diagramParameters = diagramParameters;
         }
 
-        static final UnaryOperator<Stream<Call>> requiredPerspectiveModifier =
+        static final UnaryOperator<Stream<Call>> addReturningCallsAndResort =
                 stream -> stream
                         .flatMap(Call::includeReturning)
                         .sorted(Comparator.comparing(Call::start));
