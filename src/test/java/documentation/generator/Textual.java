@@ -14,7 +14,7 @@ class Textual {
 
         @Override
         public void print(PrintWriter out) {
-            perspective.scenarios().scenarios().forEach(scenario -> {
+            perspective.scenarios().forEachScenario(scenario -> {
                 out.println("scenario: ");
                 out.println(scenario.description().scenario());
                 scenario.description().steps().forEach(stepDescription -> {

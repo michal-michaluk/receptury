@@ -42,7 +42,7 @@ record TelemetrySpans(Map<ByteString, Span> spans,
             Span span = this.span(spanId);
             if (span != null) {
                 Span parent = this.span(span.parentSpanId());
-                scenarioSubGraph.add(Call.of(parent, span, parameters.participantName(), parameters.callName()));
+                scenarioSubGraph.add(Call.of(parent, span, parameters));
             }
         });
         return scenarioSubGraph;

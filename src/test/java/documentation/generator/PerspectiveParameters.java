@@ -21,6 +21,10 @@ record PerspectiveParameters(
         return participantName.apply(span);
     }
 
+    public String callName(Span span) {
+        return callName.apply(span);
+    }
+
     Stream<Map.Entry<String, Object>> argumentsFilter(Span span) {
         return argumentsFilter.apply(span);
     }

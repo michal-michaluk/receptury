@@ -124,6 +124,7 @@ class FullScenarioProcessingTest {
     static PerspectiveParameters exampleParameters() {
         String packagePrefix = "devices.configuration.";
         Predicate<Span> scenarioPredicate = span -> span.attribute("documenting.scenario").isPresent();
+        // ||span.attribute("code.function").filter(s -> s.equals("fullInstallationWithoutScenarioDescription")).isPresent();
         // fucked up spans:
         // name: Session\..*
         // name: Transaction\..*
@@ -132,8 +133,9 @@ class FullScenarioProcessingTest {
                 .scenarioPredicate(scenarioPredicate)
                 .include(span -> true)
 //                .exclude(span -> false)
-                .exclude(span -> span.attribute("code.namespace").isEmpty() ||
-                                 span.attribute("code.namespace").filter(s -> s.contains("$")).isPresent())
+                .exclude(span -> span.attribute("code.namespace").isEmpty()
+                                 || span.attribute("code.namespace").filter(s -> s.contains("$")).isPresent()
+                )
 //                .exclude(span -> span.name().contains("Controller.") || span.name().contains("Mediator.")
 //                                 || Set.of("http", "Repository").contains(participantName.apply(span))
 //                )
@@ -172,7 +174,7 @@ class FullScenarioProcessingTest {
 
     @Test
     @WithSpan
-    void fullInstallation() {
+    void fullInstallationWithScenarioDescription() {
         Scenario.title("Device Installation Process")
                 .description("The process of installing a device in the system")
                 .precondition("Device sold to customer in sales subdomain")
@@ -381,6 +383,180 @@ class FullScenarioProcessingTest {
                     }
                     """, deviceId);
         });
+    }
+
+    void fullInstallationWithoutScenarioDescription() {
+
+        String orderId = "order-" + randomAlphanumeric(4);
+
+        transactional(() -> service.handleWorkOrder(
+                givenWorkOrderFor(orderId, DeviceFixture.ownership())
+        ));
+
+        http.installations.get(0, 10000).isExactlyLike("""
+                {
+                  "content": [
+                    {
+                      "orderId": "%s",
+                      "deviceId": null,
+                      "state": "PENDING"
+                    }
+                  ],
+                  "totalPages": 1,
+                  "totalElements": 1,
+                  "page": 0,
+                  "size": 1
+                }
+                """, orderId);
+
+        http.installations.get(orderId).isExactlyLike("""
+                {"orderId":"%s","deviceId":null,"state":"PENDING"}
+                """, orderId);
+
+        http.installations.patch(orderId, """
+                        { "assignDevice": "%s" }""", deviceId)
+                .isExactlyLike("""
+                        {"orderId":"%s","deviceId":"%s","state":"DEVICE_ASSIGNED"}
+                        """, orderId, deviceId);
+
+        http.installations.patch(orderId, """
+                {
+                  "assignLocation": {
+                    "street": "Rakietowa",
+                    "houseNumber": "1A",
+                    "city": "Wrocław",
+                    "postalCode": "54-621",
+                    "state": null,
+                    "country": "POL",
+                    "coordinates": {
+                      "longitude": 51.09836221719513,
+                      "latitude": 16.931752852309156
+                    }
+                  }
+                }
+                """).isExactlyLike("""
+                {"orderId":"%s","deviceId":"%s","state":"DEVICE_ASSIGNED"}
+                """, orderId, deviceId);
+
+        http.communication.bootIot16(deviceId, """
+                {
+                  "chargePointVendor": "Garo",
+                  "chargePointModel": "CPF25 Family",
+                  "chargePointSerialNumber": "820394A93203",
+                  "chargeBoxSerialNumber": "891234A56711",
+                  "firmwareVersion": "1.1",
+                  "iccid": "112233445566778899C1",
+                  "imsi": "082931213347973812",
+                  "meterType": "5051",
+                  "meterSerialNumber": "937462A48276"
+                }
+                """).hasFieldsLike("""
+                {"interval":1800,"status":"Pending"}
+                """, deviceId);
+
+        http.installations.get(orderId)
+                .isExactlyLike("""
+                        {"orderId":"%s","deviceId":"%s","state":"BOOTED"}
+                        """, orderId, deviceId);
+
+        http.installations.patch(orderId, "{ \"confirmBoot\": true }")
+                .isExactlyLike("""
+                        {"orderId":"%s","deviceId":"%s","state":"BOOTED"}
+                        """, orderId, deviceId);
+
+        http.installations.patch(orderId, """
+                        { "complete": true }""")
+                .isExactlyLike("""
+                        {"orderId":"%s","deviceId":"%s","state":"COMPLETED"}
+                        """, orderId, deviceId);
+
+        http.installations.get(orderId).isExactlyLike("""
+                {"orderId":"%s","deviceId":"%s","state":"COMPLETED"}
+                """, orderId, deviceId);
+
+        http.devices.get(deviceId).isExactlyLike("""
+                {
+                  "deviceId": "%s",
+                  "ownership": {
+                    "operator": "Devicex.nl",
+                    "provider": "public-devices"
+                  },
+                  "location": {
+                    "street": "Rakietowa",
+                    "houseNumber": "1A",
+                    "city": "Wrocław",
+                    "postalCode": "54-621",
+                    "state": null,
+                    "country": "POL",
+                    "coordinates": {
+                      "longitude": 51.09836221719513,
+                      "latitude": 16.931752852309156
+                    }
+                  },
+                  "openingHours": {
+                    "alwaysOpen": true
+                  },
+                  "settings": {
+                    "autoStart": false,
+                    "remoteControl": false,
+                    "billing": false,
+                    "reimbursement": false,
+                    "showOnMap": false,
+                    "publicAccess": false
+                  },
+                  "violations": {
+                    "operatorNotAssigned": false,
+                    "providerNotAssigned": false,
+                    "locationMissing": false,
+                    "showOnMapButMissingLocation": false,
+                    "showOnMapButNoPublicAccess": false
+                  },
+                  "visibility": {
+                    "roamingEnabled": false,
+                    "forCustomer": "INACCESSIBLE_AND_HIDDEN_ON_MAP"
+                  },
+                  "boot": {
+                    "protocol": "IoT16",
+                    "vendor": "Garo",
+                    "model": "CPF25 Family",
+                    "serial": "891234A56711",
+                    "firmware": "1.1"
+                  }
+                }
+                """, deviceId);
+
+        http.devices.patch(deviceId, """
+                {
+                  "settings": {
+                    "publicAccess": true,
+                    "showOnMap": true
+                  }
+                }
+                """).hasFieldsLike("""
+                {
+                  "deviceId": "%s",
+                  "settings": {
+                    "showOnMap": true,
+                    "publicAccess": true
+                  },
+                  "visibility": {
+                    "forCustomer": "USABLE_AND_VISIBLE_ON_MAP"
+                  }
+                }
+                """, deviceId);
+
+        http.devices.get(deviceId).hasFieldsLike("""
+                {
+                  "deviceId": "%s",
+                  "settings": {
+                    "showOnMap": true,
+                    "publicAccess": true
+                  },
+                  "visibility": {
+                    "forCustomer": "USABLE_AND_VISIBLE_ON_MAP"
+                  }
+                }
+                """, deviceId);
     }
 
     private void preflightToImproveVMPerformance() {

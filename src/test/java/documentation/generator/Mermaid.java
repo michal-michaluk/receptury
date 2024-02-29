@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,27 +26,55 @@ class Mermaid {
 
         SequenceDiagram(Perspective perspective, PerspectiveParameters parameters, DiagramParameters diagramParameters) {
             this.perspective = perspective.transform(
-                    addReturningCallsAndResort,
+                    addReturningCallsAndResort(perspective.scenarios()),
                     participants -> participants
             );
             this.parameters = parameters;
             this.diagramParameters = diagramParameters;
         }
 
-        static final UnaryOperator<Stream<Call>> addReturningCallsAndResort =
-                stream -> stream
-                        .flatMap(Call::includeReturning)
-                        .sorted(Comparator.comparing(Call::start));
+        private static UnaryOperator<Stream<Call>> addReturningCallsAndResort(Scenarios scenarios) {
+            return stream -> stream
+                    .flatMap(replaceWithScenarioDescription(scenarios))
+                    .flatMap(Call::includeReturning)
+                    .sorted(Comparator.comparing(Call::start));
+        }
+
+        public static Function<Call, Stream<Call>> replaceWithScenarioDescription(Scenarios scenarios) {
+            Set<String> attributes = Set.of(
+                    Convention.DOCUMENTING_SCENARIO,
+                    Convention.DOCUMENTING_SCENARIO_STEP);
+            return (call) -> {
+                if (call.parent() == null || call.child().anyOfAttributes(attributes).isPresent()) {
+                    return Stream.of();
+                }
+
+                return scenarios.stepDescription(call.parent())
+                        .map(Scenarios.StepDescription::actorName)
+                        .filter(actorName -> !actorName.isEmpty())
+                        .map(call::replaceParentParticipantName)
+                        .orElseGet(() -> Stream.of(call));
+            };
+        }
 
         @Builder
         record DiagramParameters(List<String> participantsGroupsOrder) {}
 
         @Override
         public void print(PrintWriter out) {
+            // todo:
+            // aktor zamiast stepu
+            // krotkie zycie aktora
+            // weryfikacja markdown
+            // highlighty
+
             out.println("sequenceDiagram");
-            perspective.scenarioRoots().forEach(scenario ->
-                    out.println("  participant " + encode(parameters.participantName(scenario)))
+            out.println("  box actors");
+            perspective.scenarios().forEachActor(actor ->
+                    out.println("  actor " + encode(actor.name()))
             );
+            out.println("  end");
+
             diagramParameters.participantsGroupsOrder()
                     .forEach(group -> {
                         var groupParticipants = perspective.participantGroup(group);
@@ -119,13 +149,22 @@ class Mermaid {
 
         @Override
         public void print(PrintWriter out) {
+            // todo:
+            // reset czasu: EACH_SCENARIO, EACH_STEP, NEVER
+            // przesunięcie negatywne czasu
+            // aktor przy stepie
+            // info o kolorach, per grupa / partycypant
+            // obsługa markdown / usunięcie go
+            // highlighty
+
+
             out.println("gantt");
             if (diagramParameters.title() != null) {
                 out.println("  title " + diagramParameters.title);
             }
             out.println("  dateFormat X");
             out.println("  axisFormat " + diagramParameters.axisFormat());
-            perspective.scenarios().scenarios().forEach(scenario -> {
+            perspective.scenarios().forEachScenario(scenario -> {
                 Instant start = scenario.root().start();
                 Instant max = Instant.ofEpochMilli(perspective.calls().stream()
                         .skip(1)

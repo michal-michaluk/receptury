@@ -1,7 +1,6 @@
 package documentation.generator;
 
 import java.time.Instant;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 record Call(
@@ -10,42 +9,46 @@ record Call(
         Span child,
         String childParticipant,
         String callName,
-        Option variant) {
+        CallVariant variant) {
 
-    enum Option {
+    enum CallVariant {
         INITIATING, RETURNING, SELF_CALL
     }
 
-    static Call of(Span parent, Span child, Function<Span, String> participantName, Function<Span, String> callName) {
-        String parentParticipant = parent != null ? participantName.apply(parent) : null;
-        String childParticipant = participantName.apply(child);
-        Option option = childParticipant.equals(parentParticipant) ? Option.SELF_CALL : Option.INITIATING;
+    static Call of(Span parent, Span child, PerspectiveParameters parameters) {
+        String parentParticipant = parent != null ? parameters.participantName(parent) : null;
+        String childParticipant = parameters.participantName(child);
+        CallVariant callVariant = childParticipant.equals(parentParticipant) ? CallVariant.SELF_CALL : CallVariant.INITIATING;
         return new Call(
                 parent,
                 parentParticipant,
                 child,
                 childParticipant,
-                callName.apply(child),
-                option
+                parameters.callName(child),
+                callVariant
         );
     }
 
     Instant start() {
-        if (variant == Option.RETURNING) {
+        if (variant == CallVariant.RETURNING) {
             return parent.end();
         }
         return child.start();
     }
 
     Instant end() {
-        if (variant == Option.RETURNING) {
+        if (variant == CallVariant.RETURNING) {
             return parent.start();
         }
         return child.end();
     }
 
+    Stream<Call> replaceParentParticipantName(String newName) {
+        return Stream.of(new Call(parent, newName, child, childParticipant, callName, variant));
+    }
+
     Stream<Call> includeReturning() {
-        if (parent() == null || variant == Option.SELF_CALL) {
+        if (parent() == null || variant == CallVariant.SELF_CALL) {
             return Stream.of(this);
         }
         return Stream.of(this, returning());
@@ -56,7 +59,7 @@ record Call(
                 child, childParticipant,
                 parent, parentParticipant,
                 "return " + callName,
-                Option.RETURNING
+                CallVariant.RETURNING
         );
     }
 

@@ -11,10 +11,6 @@ record Perspective(Scenarios scenarios,
                    List<Call> calls,
                    Participants participants) {
 
-    List<Span> scenarioRoots() {
-        return scenarios.roots();
-    }
-
     record Participants(LinkedHashMap<String, LinkedHashSet<String>> participants) {
 
         Group get(String group) {
@@ -71,7 +67,7 @@ record Perspective(Scenarios scenarios,
                         return Stream.iterate(call.parent(), span -> span.parentSpanId() != null, span -> telemetry.span(span.parentSpanId()))
                                 .filter(parent -> parameters.include().test(parent) && !parameters.exclude().test(parent))
                                 .findFirst()
-                                .map(parent -> Call.of(parent, call.child(), parameters.participantName(), parameters.callName()))
+                                .map(parent -> Call.of(parent, call.child(), parameters))
                                 .stream();
                     } else {
                         return Stream.empty();

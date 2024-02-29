@@ -11,19 +11,9 @@ import java.util.function.Supplier;
 import static java.util.List.copyOf;
 import static java.util.List.of;
 
-public class Step {
+public record Step(Type type, String step, List<Actor> actors) {
 
     enum Type {GIVEN, WHEN, THEN}
-
-    private final String step;
-    private final Type type;
-    private final List<Actor> actors;
-
-    Step(Type type, String step, List<Actor> actors) {
-        this.type = type;
-        this.step = step;
-        this.actors = actors;
-    }
 
     public static void ignoredInDocumented(Runnable implementation) {
         Span.current().setAttribute("documenting.ignore", true);

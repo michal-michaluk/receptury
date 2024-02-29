@@ -21,6 +21,10 @@ public class Scenario {
         return scenario;
     }
 
+    public static void begin(@Language("Markdown") String title) {
+        title(title).begin();
+    }
+
     public Scenario description(@Language("Markdown") String description) {
         this.description = description;
         return this;
