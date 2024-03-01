@@ -52,6 +52,9 @@ class Scenarios {
     record Highlighted(String information, String data) {}
 
     record Scenario(Span root, Description description, List<Call> subGraph) {
+        public void forEachStep(Consumer<StepDescription> consumer) {
+            description.steps().forEach(consumer);
+        }
     }
 
     Stream<Call> subGraph() {

@@ -58,7 +58,12 @@ class Mermaid {
         }
 
         @Builder
-        record DiagramParameters(List<String> participantsGroupsOrder) {}
+        record DiagramParameters(List<String> participantsGroupsOrder) {
+            public static DiagramParametersBuilder defaultParams() {
+                return builder()
+                        .participantsGroupsOrder(List.of());
+            }
+        }
 
         @Override
         public void print(PrintWriter out) {

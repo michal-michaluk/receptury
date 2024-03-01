@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -104,19 +105,22 @@ class FullScenarioProcessingTest {
     static void generateDocumentation() throws IOException {
         Stream<Path> source = Files.list(traces);
         TelemetrySpans telemetry = TelemetrySources.fromProtoFiles(source);
-        List<PerspectiveParameters> perspectives = List.of(exampleParameters());
-        perspectives.forEach(parameters -> {
-            Scenarios scenarios = telemetry.selectScenarios(parameters);
-            Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
-            Printable sequenceDiagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
-            Sink.toFile(Paths.get("src/docs/installation-sequence.mmd"))
+        PerspectiveParameters parameters = exampleParameters();
+        Scenarios scenarios = telemetry.selectScenarios(parameters);
+        Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
+        Printable gantt = new Mermaid.Gantt(perspective, parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build());
+        Sink.toFile(Paths.get("src/docs/installation-trace.mmd"))
+                .accept(gantt);
+        Printable scenario = new VerboseScenario(perspective, parameters);
+        Sink.toFile(Paths.get("src/docs/scenario.txt"))
+                .accept(scenario);
+
+
+        var i = new AtomicInteger(0);
+        Perspective.Splitting.forEachScenarioStep(telemetry, scenarios, parameters).forEach(stepPerspective -> {
+            Printable sequenceDiagram = new Mermaid.SequenceDiagram(stepPerspective, parameters, exampleDiagramParameters());
+            Sink.toMarkdown(Paths.get("src/docs/installation-steps.md"), "%%installation-steps-" + i.getAndIncrement())
                     .accept(sequenceDiagram);
-            Printable gantt = new Mermaid.Gantt(perspective, parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build());
-            Sink.toFile(Paths.get("src/docs/installation-trace.mmd"))
-                    .accept(gantt);
-            Printable scenario = new VerboseScenario(perspective, parameters);
-            Sink.toFile(Paths.get("src/docs/scenario.txt"))
-                    .accept(scenario);
         });
     }
 

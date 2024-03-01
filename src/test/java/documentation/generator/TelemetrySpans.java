@@ -28,7 +28,7 @@ record TelemetrySpans(Map<ByteString, Span> spans,
         List<Scenarios.Scenario> list = this
                 .select(parameters.scenarioPredicate())
                 .map(scenario -> {
-                    var subGraph = scenarioSubGraph(scenario, parameters);
+                    var subGraph = subGraph(scenario, parameters);
                     return new Scenarios.Scenario(scenario, description(scenario), subGraph);
                 }).toList();
 
@@ -36,16 +36,16 @@ record TelemetrySpans(Map<ByteString, Span> spans,
     }
 
     @NotNull
-    private List<Call> scenarioSubGraph(Span scenarioRoot, PerspectiveParameters parameters) {
-        var scenarioSubGraph = new ArrayList<Call>();
-        new DepthFirstIterator<>(this.graph(), scenarioRoot.spanId()).forEachRemaining(spanId -> {
+    List<Call> subGraph(Span root, PerspectiveParameters parameters) {
+        var subGraph = new ArrayList<Call>();
+        new DepthFirstIterator<>(this.graph(), root.spanId()).forEachRemaining(spanId -> {
             Span span = this.span(spanId);
             if (span != null) {
                 Span parent = this.span(span.parentSpanId());
-                scenarioSubGraph.add(Call.of(parent, span, parameters));
+                subGraph.add(Call.of(parent, span, parameters));
             }
         });
-        return scenarioSubGraph;
+        return subGraph;
     }
 
     private Scenarios.Description description(Span root) {

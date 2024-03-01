@@ -1,5 +1,6 @@
 package documentation.generator;
 
+import documentation.generator.Scenarios.Description;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -79,12 +80,41 @@ record Perspective(Scenarios scenarios,
     @NotNull
     private static Participants collectParticipants(PerspectiveParameters parameters, List<Call> calls) {
         return new Participants(calls.stream()
-                .filter(call -> call.parent() != null)
+//                .filter(call -> call.parent() != null)
                 .collect(Collectors.groupingBy(
                         call -> parameters.participantGroup().apply(call.child()),
                         LinkedHashMap::new,
                         Collectors.mapping(Call::childParticipant,
                                 Collectors.toCollection(LinkedHashSet::new))
                 )));
+    }
+
+    interface Splitting {
+        private static Stream<Perspective> forEachScenario(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
+            Stream.Builder<Perspective> stream = Stream.builder();
+            scenarios.forEachScenario(scenario -> {
+                var calls = filterAndSortCalls(telemetry, parameters, scenario.subGraph().stream());
+                var participants = collectParticipants(parameters, calls);
+                stream.add(new Perspective(new Scenarios(List.of(scenario)), calls, participants));
+            });
+            return stream.build();
+        }
+
+        static Stream<Perspective> forEachScenarioStep(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
+            Stream.Builder<Perspective> stream = Stream.builder();
+            scenarios.forEachScenario(scenario ->
+                    scenario.forEachStep(step -> {
+                        var calls = filterAndSortCalls(telemetry, parameters, telemetry.subGraph(step.root(), parameters).stream());
+                        var participants = collectParticipants(parameters, calls);
+                        Scenarios.Scenario filtered = new Scenarios.Scenario(
+                                step.root(),
+                                new Description(scenario.description().scenario(), List.of(step)),
+                                calls
+                        );
+                        stream.add(new Perspective(new Scenarios(List.of(filtered)), calls, participants));
+                    })
+            );
+            return stream.build();
+        }
     }
 }
