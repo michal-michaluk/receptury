@@ -87,14 +87,6 @@ class SequenceDiagramTest {
 
     private static DiagramParameters exampleDiagramParameters() {
         return DiagramParameters.builder()
-                .participantsGroupsOrder(List.of(
-                        "web",
-                        "installations",
-                        "mediators",
-                        "device",
-                        "communication",
-                        "search",
-                        "persistence"))
                 .build();
     }
 }

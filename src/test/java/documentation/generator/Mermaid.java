@@ -7,7 +7,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -58,20 +57,19 @@ class Mermaid {
         }
 
         @Builder
-        record DiagramParameters(List<String> participantsGroupsOrder) {
+        record DiagramParameters() {
             public static DiagramParametersBuilder defaultParams() {
-                return builder()
-                        .participantsGroupsOrder(List.of());
+                return builder();
             }
         }
 
         @Override
         public void print(PrintWriter out) {
             // todo:
-            // aktor zamiast stepu
-            // krotkie zycie aktora
             // weryfikacja markdown
             // highlighty
+            // ignor stepu
+            // praca bez opisu scenariusza i stepów
 
             out.println("sequenceDiagram");
             out.println("  box actors");
@@ -80,22 +78,21 @@ class Mermaid {
             );
             out.println("  end");
 
-            diagramParameters.participantsGroupsOrder()
-                    .forEach(group -> {
-                        var groupParticipants = perspective.participantGroup(group);
-                        if (groupParticipants.hasSize(1)) {
-                            String first = groupParticipants.getFirst();
-                            if (group.equals(first)) {
+            perspective.participants().forEachGroup(group -> {
+                        if (group.hasSize(1)) {
+                            String first = group.getFirst();
+                            if (group.name().equals(first)) {
                                 out.println("  participant " + encode(first));
                                 return;
                             }
                         }
-                        out.println("  box " + group);
-                        groupParticipants.stream()
+                        out.println("  box " + group.name());
+                        group.stream()
                                 .map(SequenceDiagram::encode)
                                 .forEach(participant -> out.println("    participant " + participant));
                         out.println("  end");
-                    });
+                    }
+            );
             perspective.calls().stream()
                     .filter(call -> call.parent() != null)
                     .forEach(call -> {

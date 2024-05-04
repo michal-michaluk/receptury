@@ -1,5 +1,7 @@
 package documentation.generator;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.intellij.lang.annotations.Language;
 
 import java.util.ArrayList;
@@ -21,8 +23,8 @@ public class Scenario {
         return scenario;
     }
 
-    public static void begin(@Language("Markdown") String title) {
-        title(title).begin();
+    public static void begin(@Language("Markdown") String title, Runnable implementation) {
+        title(title).begin(implementation);
     }
 
     public Scenario description(@Language("Markdown") String description) {
@@ -46,9 +48,17 @@ public class Scenario {
     }
 
     public void begin() {
-        current()
-                .updateName(title)
-                .setAttribute(Convention.DOCUMENTING_SCENARIO, toString());
+        Span span = current();
+        span.setAttribute(Convention.DOCUMENTING_SCENARIO, toString());
+        if (title != null) {
+            span.updateName(title);
+        }
+    }
+
+    @WithSpan
+    public void begin(Runnable implementation) {
+        begin();
+        implementation.run();
     }
 
     @Override

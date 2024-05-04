@@ -1,11 +1,10 @@
-package devices.configuration;
+package documentation.generator;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import documentation.generator.OtelInstrumentationMethodsInclude;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ public class ProduceMethodsForInstrumentationTest {
                         simpleNameEndingWith("Service"),
                         simpleNameEndingWith("ReadModel")))
         ));
-        var printer = new OtelInstrumentationMethodsInclude(importedClasses, methods);
+        var printer = OtelInstrumentationMethodsInclude.instrumentSpans(importedClasses, methods);
         String include = printer.includeString();
 
         System.setProperty("otel.instrumentation.methods.include", include);

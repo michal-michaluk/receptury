@@ -4,6 +4,7 @@ import documentation.generator.Scenarios.Description;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,10 +18,16 @@ record Perspective(Scenarios scenarios,
         Group get(String group) {
             return new Group(group, Objects.requireNonNullElseGet(participants.get(group), LinkedHashSet::new));
         }
-    }
 
-    Group participantGroup(String group) {
-        return participants.get(group);
+        public void forEachGroup(Consumer<Group> function) {
+            participants.forEach((group, participants) -> function.accept(new Group(group, participants)));
+        }
+
+        public void forEachParticipant(Consumer<String> function) {
+            participants.values().stream()
+                    .flatMap(Collection::stream)
+                    .forEach(function);
+        }
     }
 
     record Group(String name, LinkedHashSet<String> participants) {
@@ -74,13 +81,13 @@ record Perspective(Scenarios scenarios,
                         return Stream.empty();
                     }
                 })
+                .sorted(Comparator.comparing(Call::start))
                 .toList();
     }
 
     @NotNull
     private static Participants collectParticipants(PerspectiveParameters parameters, List<Call> calls) {
         return new Participants(calls.stream()
-//                .filter(call -> call.parent() != null)
                 .collect(Collectors.groupingBy(
                         call -> parameters.participantGroup().apply(call.child()),
                         LinkedHashMap::new,
