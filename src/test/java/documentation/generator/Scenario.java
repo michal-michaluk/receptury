@@ -11,7 +11,7 @@ import static io.opentelemetry.api.trace.Span.current;
 
 public class Scenario {
 
-    private String title;
+    String title;
     private String description;
     private List<String> preconditions = new ArrayList<>();
     private List<String> includes = new ArrayList<>();

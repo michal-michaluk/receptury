@@ -4,6 +4,7 @@ import documentation.generator.Scenarios.Description;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -97,29 +98,45 @@ record Perspective(Scenarios scenarios,
     }
 
     interface Splitting {
-        private static Stream<Perspective> forEachScenario(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
-            Stream.Builder<Perspective> stream = Stream.builder();
+        record Split<T>(int index, T scope, Perspective perspective) {}
+
+        static Stream<Split<Scenario>> forEachScenario(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
+            Stream.Builder<Split<Scenario>> stream = Stream.builder();
+            var i = new AtomicInteger(0);
             scenarios.forEachScenario(scenario -> {
                 var calls = filterAndSortCalls(telemetry, parameters, scenario.subGraph().stream());
                 var participants = collectParticipants(parameters, calls);
-                stream.add(new Perspective(new Scenarios(List.of(scenario)), calls, participants));
+                stream.add(new Split<>(
+                        i.getAndIncrement(),
+                        scenario.description().scenario(),
+                        new Perspective(new Scenarios(List.of(scenario)), calls, participants)
+                ));
             });
             return stream.build();
         }
 
-        static Stream<Perspective> forEachScenarioStep(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
-            Stream.Builder<Perspective> stream = Stream.builder();
-            scenarios.forEachScenario(scenario ->
-                    scenario.forEachStep(step -> {
-                        var calls = filterAndSortCalls(telemetry, parameters, telemetry.subGraph(step.root(), parameters).stream());
-                        var participants = collectParticipants(parameters, calls);
-                        Scenarios.Scenario filtered = new Scenarios.Scenario(
-                                step.root(),
-                                new Description(scenario.description().scenario(), List.of(step)),
-                                calls
-                        );
-                        stream.add(new Perspective(new Scenarios(List.of(filtered)), calls, participants));
-                    })
+        record StepScope(int index, Scenario scenario, Step step) {}
+
+        static Stream<Split<StepScope>> forEachScenarioStep(TelemetrySpans telemetry, Scenarios scenarios, PerspectiveParameters parameters) {
+            Stream.Builder<Split<StepScope>> stream = Stream.builder();
+            var i = new AtomicInteger(0);
+            scenarios.forEachScenario(scenario -> {
+                        var j = new AtomicInteger(0);
+                        scenario.forEachStep(step -> {
+                            var calls = filterAndSortCalls(telemetry, parameters, telemetry.subGraph(step.root(), parameters).stream());
+                            var participants = collectParticipants(parameters, calls);
+                            Scenarios.Scenario filtered = new Scenarios.Scenario(
+                                    step.root(),
+                                    new Description(scenario.description().scenario(), List.of(step)),
+                                    calls
+                            );
+                            stream.add(new Split<>(
+                                    i.getAndIncrement(),
+                                    new StepScope(j.getAndIncrement(), scenario.description().scenario(), step.step()),
+                                    new Perspective(new Scenarios(List.of(filtered)), calls, participants)
+                            ));
+                        });
+                    }
             );
             return stream.build();
         }
