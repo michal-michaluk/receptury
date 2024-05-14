@@ -25,7 +25,7 @@ class SequenceDiagramTest {
             Scenarios scenarios = telemetry.selectScenarios(parameters);
             Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
             Printable diagram = new Mermaid.SequenceDiagram(perspective, parameters, exampleDiagramParameters());
-            Sink.toFile(Paths.get("src/docs/installation-e2e.mmd"))
+            Sink.toNewFile(Paths.get("src/docs/installation-e2e.mmd"))
                     .accept(diagram);
         });
     }

@@ -15,7 +15,6 @@ import devices.configuration.installations.InstallationService;
 import devices.configuration.mediators.InstallationsToDevicesMediator;
 import devices.configuration.mediators.ProtocolsToIntervalsMediator;
 import documentation.generator.Mermaid.SequenceDiagram.DiagramParameters;
-import documentation.generator.Textual.VerboseScenario;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -106,15 +105,15 @@ class FullScenarioProcessingTest {
         PerspectiveParameters parameters = exampleParameters();
         Scenarios scenarios = telemetry.selectScenarios(parameters);
         Perspective.Splitting.forEachScenario(telemetry, scenarios, parameters).forEach(split -> {
-            Sink.toFile(Paths.get("src/docs/" + split.scope().title + "-trace.mmd"))
+            Sink.toNewFile(Paths.get("src/docs/" + split.scope().title + "-trace.mmd"))
                     .accept(new Mermaid.Gantt(split.perspective(), parameters, Mermaid.Gantt.DiagramParameters.defaultParams().build()));
-            Sink.toFile(Paths.get("src/docs/" + split.scope().title + "-scenario.txt"))
-                    .accept(new VerboseScenario(split.perspective(), parameters));
-            Sink.toFile(Paths.get("src/docs/" + split.scope().title + "-sequence.mmd"))
+            Sink.toNewFile(Paths.get("src/docs/" + split.scope().title + "-scenario.txt"))
+                    .accept(new Textual.VerboseScenario(split.perspective(), parameters));
+            Sink.toNewFile(Paths.get("src/docs/" + split.scope().title + "-sequence.mmd"))
                     .accept(new Mermaid.SequenceDiagram(split.perspective(), parameters, exampleDiagramParameters()));
         });
         Perspective.Splitting.forEachScenarioStep(telemetry, scenarios, parameters).forEach(split ->
-                Sink.toMarkdown(Paths.get("src/docs/" + split.scope().scenario().title + ".md"), "%%installation-steps-" + split.scope().index())
+                Sink.toExistingMarkdown(Paths.get("src/docs/" + split.scope().scenario().title + ".md"), "%%installation-steps-" + split.scope().index())
                         .accept(new Mermaid.SequenceDiagram(split.perspective(), parameters, exampleDiagramParameters())));
     }
 

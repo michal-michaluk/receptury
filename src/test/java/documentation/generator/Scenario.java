@@ -12,10 +12,10 @@ import static io.opentelemetry.api.trace.Span.current;
 public class Scenario {
 
     String title;
-    private String description;
-    private List<String> preconditions = new ArrayList<>();
-    private List<String> includes = new ArrayList<>();
-    private List<String> excludes = new ArrayList<>();
+    String description;
+    List<String> preconditions = new ArrayList<>();
+    List<String> includes = new ArrayList<>();
+    List<String> excludes = new ArrayList<>();
 
     public static Scenario title(@Language("Markdown") String title) {
         Scenario scenario = new Scenario();

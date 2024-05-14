@@ -26,7 +26,7 @@ class GanttDiagramTest {
             Scenarios scenarios = telemetry.selectScenarios(parameters);
             Perspective perspective = Perspective.perspective(telemetry, scenarios, parameters);
             Printable diagram = new Mermaid.Gantt(perspective, parameters, exampleDiagramParameters());
-            Sink.toFile(Paths.get("src/docs/installation-gantt.mmd"))
+            Sink.toNewFile(Paths.get("src/docs/installation-gantt.mmd"))
                     .accept(diagram);
         });
     }

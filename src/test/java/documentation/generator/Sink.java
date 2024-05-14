@@ -13,15 +13,20 @@ import java.util.regex.Pattern;
 public interface Sink {
     void accept(Printable printable);
 
+    default Sink append(Printable printable) {
+        accept(printable);
+        return this;
+    }
+
     @NotNull
-    static Sink toFile(Path path) {
+    static Sink toNewFile(Path path) {
+        try {
+            Files.deleteIfExists(path);
+            Files.createFile(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return printable -> {
-            try {
-                Files.deleteIfExists(path);
-                Files.createFile(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
             try (BufferedWriter writer = Files.newBufferedWriter(path);
                  PrintWriter out = new PrintWriter(writer)) {
                 printable.print(out);
@@ -54,7 +59,7 @@ public interface Sink {
      * @return A Sink that injects Mermaid diagram into to the specified Markdown file.
      */
     @NotNull
-    static Sink toMarkdown(Path path, String markerLine) {
+    static Sink toExistingMarkdown(Path path, String markerLine) {
         return printable -> {
             try {
                 if (Files.notExists(path)) {

@@ -129,7 +129,7 @@ class SinkTest {
     }
 
     private void whenMarkdownIsInjectedInto(Path path, String markerLine) {
-        Sink sink = Sink.toMarkdown(path, markerLine);
+        Sink sink = Sink.toExistingMarkdown(path, markerLine);
         sink.accept(out -> out.println(newDiagram));
     }
 }
