@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = IntervalRulesController.class)
-class IntervalRulesControllerTest {
+class IntervalsControllerTest {
 
     @Autowired
     private MockMvc rest;
