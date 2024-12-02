@@ -1,5 +1,5 @@
 package devices.configuration.intervals;
 
-public interface IntervalRulesRepository {
+interface IntervalRulesRepository {
     IntervalRules get();
 }

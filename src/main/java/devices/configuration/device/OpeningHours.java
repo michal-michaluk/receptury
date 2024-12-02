@@ -17,7 +17,7 @@ class OpeningHours {
     boolean alwaysOpen;
     Week opened;
 
-    static OpeningHours alwaysOpen() {
+    static OpeningHours alwaysOpened() {
         return ALWAYS_OPEN;
     }
 
@@ -35,7 +35,7 @@ class OpeningHours {
     }
 
     static OpeningHours alwaysOpenOrGiven(OpeningHours opening) {
-        return opening == null ? OpeningHours.alwaysOpen() : opening;
+        return opening == null ? OpeningHours.alwaysOpened() : opening;
     }
 
     @Value

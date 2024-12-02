@@ -12,12 +12,12 @@ class Device {
     private OpeningHours openingHours;
     private Settings settings;
 
-    static Device create(String deviceId) {
+    static Device newDevice(String deviceId) {
         return new Device(
                 deviceId,
                 Ownership.unowned(),
                 null,
-                OpeningHours.alwaysOpen(),
+                OpeningHours.alwaysOpened(),
                 Settings.defaultSettings()
         );
     }
@@ -32,7 +32,7 @@ class Device {
 
     void resetConfiguration() {
         updateLocation(null);
-        updateOpeningHours(OpeningHours.alwaysOpen());
+        updateOpeningHours(OpeningHours.alwaysOpened());
         updateSettings(Settings.defaultSettings());
     }
 
@@ -60,13 +60,13 @@ class Device {
                 .build();
     }
 
-    DeviceSnapshot toSnapshot() {
+    DeviceConfiguration toDeviceConfiguration() {
         Violations violations = checkViolations();
         Visibility visibility = Visibility.basedOn(
                 violations.isValid() && settings.isPublicAccess(),
                 settings.isShowOnMap()
         );
-        return new DeviceSnapshot(
+        return new DeviceConfiguration(
                 deviceId,
                 ownership,
                 location,

@@ -1,6 +1,7 @@
 package devices.configuration;
 
 import lombok.SneakyThrows;
+import org.intellij.lang.annotations.Language;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class JsonAssert {
@@ -26,8 +27,14 @@ public class JsonAssert {
     }
 
     @SneakyThrows
-    public JsonAssert isExactlyLike(String json) {
+    public JsonAssert isExactlyLike(@Language("JSON") String json) {
         JSONAssert.assertEquals(json, actual, true);
+        return this;
+    }
+
+    @SneakyThrows
+    public JsonAssert isExactlyLike(@Language("JSON") String json, Object... params) {
+        JSONAssert.assertEquals(json.formatted(params), actual, true);
         return this;
     }
 
@@ -38,8 +45,14 @@ public class JsonAssert {
     }
 
     @SneakyThrows
-    public JsonAssert hasFieldsLike(String json) {
+    public JsonAssert hasFieldsLike(@Language("JSON") String json) {
         JSONAssert.assertEquals(json, actual, false);
+        return this;
+    }
+
+    @SneakyThrows
+    public JsonAssert hasFieldsLike(@Language("JSON") String json, Object... params) {
+        JSONAssert.assertEquals(json.formatted(params), actual, false);
         return this;
     }
 
