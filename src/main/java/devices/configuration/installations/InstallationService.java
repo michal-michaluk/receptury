@@ -17,7 +17,6 @@ import java.util.Optional;
 public class InstallationService {
 
     private final InstallationRepository repository;
-    private final Devices devices;
 
     @EventListener
     public void handleWorkOrder(WorkOrder order) {
@@ -56,11 +55,7 @@ public class InstallationService {
         InstallationProcess process = repository.getByOrderId(orderId);
         CompletionResult result = process.complete();
         if (result.isConfirmed()) {
-            devices.create(
-                    process.deviceId,
-                    result.ownership(),
-                    result.location()
-            );
+            // integrate with devices -> create new device
         }
         return result;
     }
