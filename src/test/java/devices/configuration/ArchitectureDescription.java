@@ -50,6 +50,7 @@ public class ArchitectureDescription {
                 .onlyDependOnClassesThat(or(
                         sharedKernelUsed,
                         resideInAnyPackage(aPackage, "java..", "lombok.."),
+                        resideInAPackage("org.springframework.data.domain"),
                         resideInAPackage("org.springframework.stereotype"),
                         resideInAPackage("org.springframework.transaction.annotation"),
                         resideInAPackage("org.springframework.context.event")
