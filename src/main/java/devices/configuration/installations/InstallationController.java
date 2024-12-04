@@ -23,20 +23,19 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 class InstallationController {
 
     private final InstallationService service;
-    private final InstallationReadModel reads;
 
     @GetMapping(path = "/installations", params = {"page", "size"},
             produces = APPLICATION_JSON_VALUE)
     Page<InstallationProcessState> getPage(
-            InstallationReadModel.QueryParams params,
+            InstallationService.QueryParams params,
             Pageable pageable) {
-        return reads.query(params, pageable);
+        return service.query(params, pageable);
     }
 
     @GetMapping(path = "/installations/{orderId}",
             produces = APPLICATION_JSON_VALUE)
     InstallationProcessState get(@PathVariable String orderId) {
-        return reads.queryByOrderId(orderId)
+        return service.getByOrderId(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Work order not found"));
     }
 
@@ -51,7 +50,8 @@ class InstallationController {
             case ConfirmBoot ignore -> service.confirmBootData(orderId);
             case CompleteInstallation ignore -> service.complete(orderId);
         }
-        return service.getByOrderId(orderId);
+        return service.getByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Work order not found"));
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)

@@ -107,7 +107,7 @@ class DeviceReadsControllerTest {
                         List.of("Available", "Faulted")
                 )));
 
-        rest.perform(get("/devices?provider={provider}&page=0&size=2", "provider")
+        rest.perform(get("/devices?operator={operator}&page=0&size=2", "Devicex.nl")
                         .with(jwt())
                         .accept("application/vnd.device.summary+json"))
                 .andExpect(status().isOk())
@@ -141,7 +141,7 @@ class DeviceReadsControllerTest {
                         }
                         """, true));
 
-        Mockito.verify(projection).querySummary("provider", Pageable.ofSize(2));
+        Mockito.verify(projection).querySummary("Devicex.nl", Pageable.ofSize(2));
     }
 
     @NotNull

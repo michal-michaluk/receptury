@@ -74,23 +74,23 @@ class DevicesReadModel {
     }
 
     @Transactional(readOnly = true)
-    public List<DevicePin> queryPins(String provider) {
-        return repository.findAllByProvider(provider)
+    public List<DevicePin> queryPins(String operator) {
+        return repository.findAllByOperator(operator)
                 .map(DeviceReadsEntity::getPin)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public Page<DeviceSummary> querySummary(String provider, Pageable pageable) {
-        return repository.findAllByProvider(provider, pageable)
+    public Page<DeviceSummary> querySummary(String operator, Pageable pageable) {
+        return repository.findAllByOperator(operator, pageable)
                 .map(DeviceReadsEntity::getSummary);
     }
 
     @Repository
     interface DeviceReadsRepository extends PagingAndSortingRepository<DeviceReadsEntity, String> {
-        Stream<DeviceReadsEntity> findAllByProvider(String provider);
+        Stream<DeviceReadsEntity> findAllByOperator(String operator);
 
-        Page<DeviceReadsEntity> findAllByProvider(String provider, Pageable pageable);
+        Page<DeviceReadsEntity> findAllByOperator(String operator, Pageable pageable);
     }
 
     @Data

@@ -40,6 +40,7 @@ public class ArchitectureDescription {
                         sharedKernelUsed,
                         resideInAnyPackage(aPackage),
                         resideInAnyPackage("devices.configuration.tools.."),
+                        resideInAnyPackage("devices.configuration.auth"),
                         resideOutsideOfPackage(parentOf(aPackage) + "..")
                 ));
     }
@@ -51,6 +52,8 @@ public class ArchitectureDescription {
                 .onlyDependOnClassesThat(or(
                         sharedKernelUsed,
                         resideInAnyPackage(aPackage, "java..", "lombok.."),
+                        resideInAnyPackage("devices.configuration.auth"),
+                        resideInAPackage("org.springframework.data.domain"),
                         resideInAPackage("org.springframework.stereotype"),
                         resideInAPackage("org.springframework.transaction.annotation"),
                         resideInAPackage("org.springframework.context.event"),
@@ -68,7 +71,8 @@ public class ArchitectureDescription {
                         sharedKernelUsed,
                         resideInAnyPackage("java..", "lombok.."),
                         resideInAnyPackage("javax.validation.."),
-                        resideInAnyPackage("com.fasterxml.jackson..")
+                        resideInAnyPackage("com.fasterxml.jackson.."),
+                        resideInAnyPackage("devices.configuration.auth")
                 ));
     }
 

@@ -3,9 +3,13 @@ package devices.configuration.installations;
 import devices.configuration.communication.BootNotification;
 import devices.configuration.device.Location;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -50,16 +54,15 @@ public class InstallationService {
 
     CompletionResult complete(String orderId) {
         InstallationProcess process = repository.getByOrderId(orderId);
-        CompletionResult result = process.complete();
-        repository.save(process);
-        if (result.isConfirmed()) {
+        CompletionResult finalization = process.complete();
+        if (finalization.isConfirmed()) {
             devices.create(
                     process.deviceId,
-                    result.ownership(),
-                    result.location()
+                    finalization.ownership(),
+                    finalization.location()
             );
         }
-        return result;
+        return finalization;
     }
 
     public Optional<InstallationProcessState> getByDeviceId(String deviceId) {
@@ -67,7 +70,25 @@ public class InstallationService {
                 .map(InstallationProcess::asState);
     }
 
-    public InstallationProcessState getByOrderId(String orderId) {
-        return repository.getByOrderId(orderId).asState();
+    Optional<InstallationProcessState> getByOrderId(String deviceId) {
+        return repository.getByDeviceId(deviceId)
+                .map(InstallationProcess::asState);
     }
+
+    Page<InstallationProcessState> query(QueryParams params, Pageable pageable) {
+        return repository.findAllMatching(params.anyStatus(), params.states(), pageable);
+    }
+
+
+    @Builder(builderMethodName = "params")
+    record QueryParams(List<InstallationProcessState.State> states) {
+        QueryParams(List<InstallationProcessState.State> states) {
+            this.states = states == null ? List.of() : states;
+        }
+
+        public boolean anyStatus() {
+            return states.isEmpty();
+        }
+    }
+
 }

@@ -92,7 +92,7 @@ class DevicesReadModelTest {
     void findAllPins() {
         DeviceConfiguration device = givenDevice();
 
-        List<DevicePin> read = projection.queryPins(device.ownership().provider());
+        List<DevicePin> read = projection.queryPins(device.ownership().operator());
 
         assertThat(read).isExactlyLike("""
                 [
@@ -115,7 +115,7 @@ class DevicesReadModelTest {
     void findAllSummary() {
         DeviceConfiguration device = givenDevice();
 
-        Page<DeviceSummary> read = projection.querySummary(device.ownership().provider(), Pageable.ofSize(5));
+        Page<DeviceSummary> read = projection.querySummary(device.ownership().operator(), Pageable.ofSize(5));
 
         assertThat(read).isExactlyLike("""
                 {
