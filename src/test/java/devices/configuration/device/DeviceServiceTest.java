@@ -1,6 +1,5 @@
 package devices.configuration.device;
 
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +17,6 @@ class DeviceServiceTest {
     final DeviceService service = new DeviceService(new FakeRepo());
 
     @Test
-    @WithSpan
     void getDeviceConfiguration() {
         String deviceId = givenDevice();
         Optional<DeviceConfiguration> configuration = service.getDevice(deviceId);
@@ -33,7 +31,6 @@ class DeviceServiceTest {
     }
 
     @Test
-    @WithSpan
     void getUnknownDeviceConfiguration() {
         Optional<DeviceConfiguration> configuration = service.getDevice("fake-device-id");
 
@@ -41,7 +38,6 @@ class DeviceServiceTest {
     }
 
     @Test
-    @WithSpan
     void createNewDevice() {
         DeviceConfiguration configuration = service.createNewDevice(
                 "new-device-id",
@@ -60,7 +56,6 @@ class DeviceServiceTest {
     }
 
     @Test
-    @WithSpan
     void recreateDeviceWithExistingId() {
         String existingDeviceId = givenDevice();
 
@@ -78,7 +73,6 @@ class DeviceServiceTest {
     }
 
     @Test
-    @WithSpan
     void update() {
         String existingDeviceId = givenDevice();
 
